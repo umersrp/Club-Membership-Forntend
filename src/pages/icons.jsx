@@ -105,6 +105,7 @@ const icons = [
   {
     name: "heroicons:pencil-square",
   },
+  { name: "heroicons:calendar-days" },
   { name: "heroicons:rectangle-stack" },
   { name: "heroicons:rocket-launch" },
   { name: "heroicons:window" },

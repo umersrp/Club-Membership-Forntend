@@ -9,9 +9,9 @@ const CrmPage = lazy(() => import("./pages/dashboard/crm"));
 const ProjectPage = lazy(() => import("./pages/dashboard/project"));
 const BankingPage = lazy(() => import("./pages/dashboard/banking"));
 const StudentFormPage = lazy(() => import("./pages/dashboard/student/[id]/student-form"));
-const AddDocumentPage = lazy(() => import("./pages/dashboard/document/[id]/add-document"));
+const AddFormPage = lazy(() => import("./pages/dashboard/clubLeader/[id]/club-leader-form"));
 const StudentListing = lazy(() => import("./pages/dashboard/student/student-listing"));
-const DocumentListing = lazy(() => import("./pages/dashboard/document/document-listing"));
+const FormsListing = lazy(() => import("./pages/dashboard/clubLeader/club-leader-listing"));
 //login
 const Login = lazy(() => import("./pages/auth/login"));
 const Login2 = lazy(() => import("./pages/auth/login2"));
@@ -130,6 +130,18 @@ import Customers from "./pages/ecommerce/customers";
 import Sellers from "./pages/ecommerce/sellers";
 import AddProduct from "./pages/ecommerce/add-product";
 import InvoiceEPage from "./pages/ecommerce/invoice-ecompage";
+import ClubLeaderListing from "./pages/dashboard/clubLeader/club-leader-listing";
+import ClubLeaderFormPage from "./pages/dashboard/clubLeader/[id]/club-leader-form";
+import NewClubListing from "./pages/dashboard/newClub/new-club-listing";
+import NewClubForm from "./pages/dashboard/newClub/[id]/new-club-form";
+import EventListing from "./pages/dashboard/events/event-listing";
+import EventsForm from "./pages/dashboard/events/[id]/event-form";
+import ClubApplicationListing from "./pages/dashboard/clubApplication/club-application-listing";
+import ClubApplicationForm from "./pages/dashboard/clubApplication/[id]/club-application-form";
+import EventRegistrationListing from "./pages/dashboard/eventRegistration/event-registration-listing";
+import EventRegistrationForm from "./pages/dashboard/eventRegistration/[id]/event-registration-form";
+import ClubListing from "./pages/dashboard/clubListing/club-listing";
+
 
 
 function App() {
@@ -153,10 +165,30 @@ function App() {
         <Route path="/*" element={<Layout />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="student-form/:id" element={<StudentFormPage />} />
-          <Route path="document-listing" element={<DocumentListing />} />
           <Route path="student-listing" element={<StudentListing />} />
-          <Route path="add-document/:id" element={<AddDocumentPage />} />
-          <Route path="add-document/add" element={<AddDocumentPage />} />
+
+          <Route path="club-leader-listing" element={<ClubLeaderListing />} />         
+          <Route path="club-leader-form/:id" element={<ClubLeaderFormPage />} />
+          <Route path="club-leader-form/add" element={<ClubLeaderFormPage />} />
+
+          <Route path="new-club-listing" element={<NewClubListing />} />
+          <Route path="new-club-form/:id" element={<NewClubForm />} />
+          <Route path="new-club-form/add" element={<NewClubForm />} />
+
+          <Route path="event-listing" element={<EventListing />} />
+          <Route path="event-form/:id" element={<EventsForm/>} />
+          <Route path="event-form/add" element={<EventsForm/>} />
+
+          <Route path="club-application-listing" element={<ClubApplicationListing/>} />
+          <Route path="club-application-form/:id" element={<ClubApplicationForm/>} />
+          <Route path="club-application-form/add" element={<ClubApplicationForm/>} />
+
+          <Route path="event-registration-listing" element={<EventRegistrationListing />} />
+          <Route path="event-registration-form/:id" element={<EventRegistrationForm/>} />
+          <Route path="event-registration-form/add" element={<EventRegistrationForm />} />
+
+          <Route path="club-listing" element={<ClubListing />} />
+
           <Route path="ecommerce" element={<Ecommerce />} />
           <Route path="crm" element={<CrmPage />} />
           <Route path="project" element={<ProjectPage />} />

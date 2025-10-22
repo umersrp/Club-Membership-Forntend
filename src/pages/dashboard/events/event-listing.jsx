@@ -6,7 +6,13 @@ import Button from "@/components/ui/Button";
 import Dropdown from "@/components/ui/Dropdown";
 import Icon from "@/components/ui/Icon";
 import { Menu } from "@headlessui/react";
-import { useTable, useRowSelect, useSortBy, useGlobalFilter, usePagination } from "react-table";
+import {
+  useTable,
+  useRowSelect,
+  useSortBy,
+  useGlobalFilter,
+  usePagination,
+} from "react-table";
 import GlobalFilter from "../../table/react-tables/GlobalFilter";
 
 const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
@@ -18,9 +24,9 @@ const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref)
   return <input type="checkbox" ref={resolvedRef} {...rest} className="table-checkbox" />;
 });
 
-const StudentListing = () => {
+const EventListing = () => {
   const navigate = useNavigate();
-  const [students, setStudents] = useState([]);
+  const [events, setEvents] = useState([]);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
 
@@ -31,47 +37,57 @@ const StudentListing = () => {
   ];
 
   const handleAction = async (action, row) => {
-    if (action === "edit") navigate(`/student-form/${row._id}`, { state: { mode: "edit" } });
-    if (action === "view") navigate(`/student-form/${row._id}`, { state: { mode: "view" } });
+    if (action === "edit") navigate(`/event-form/${row._id}`, { state: { mode: "edit" } });
+    if (action === "view") navigate(`/event-form/${row._id}`, { state: { mode: "view" } });
     if (action === "delete") {
       try {
         const token = localStorage.getItem("token");
-        await axios.delete(`${process.env.REACT_APP_BASE_URL}/students/${row._id}`, {
+        await axios.delete(`${process.env.REACT_APP_BASE_URL}/events/${row._id}`, {
           headers: { Authorization: `${token}` },
         });
-        setStudents((prev) => prev.filter((s) => s._id !== row._id));
+        setEvents((prev) => prev.filter((e) => e._id !== row._id));
       } catch (error) {
-        console.error("Error deleting student:", error);
+        console.error("Error deleting event:", error);
       }
     }
   };
 
   useEffect(() => {
-    const fetchStudents = async () => {
+    const fetchEvents = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/students`, {
+        const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/events`, {
           headers: { Authorization: `${token}` },
         });
-        setStudents(res.data.data || []);
+        setEvents(res.data.data || []);
       } catch (error) {
-        console.error("Error fetching students:", error);
+        console.error("Error fetching events:", error);
       }
     };
-    fetchStudents();
+    fetchEvents();
   }, []);
 
   const COLUMNS = useMemo(
     () => [
-      { Header: "S.No", id: "serialNo", Cell: (row) => row.row.index + 1 + (page - 1) * limit },
-      { Header: "Full Name", accessor: "fullName" },
-      { Header: "Email", accessor: "universityEmail" },
-      { Header: "Student ID", accessor: "studentId" },
-      { Header: "Major", accessor: "major" },
-      { Header: "Year", accessor: "year" },
-      { Header: "Interests", accessor: (row) => row.interests.join(", ") },
-      { Header: "Gender", accessor: "gender" },
-      { Header: "Contact", accessor: "contactNumber" },
+      {
+        Header: "S.No",
+        id: "serialNo",
+        Cell: (row) => row.row.index + 1 + (page - 1) * limit,
+      },
+      { Header: "Event Title", accessor: "title" },
+      { Header: "Description", accessor: "description" },
+      { Header: "Category", accessor: "category" },
+      { Header: "Date & Time", accessor: "dateTime" },
+      { Header: "Venue", accessor: "location" },
+      { Header: "Duration", accessor: "duration" },
+      { Header: "Capacity Limit", accessor: "capacityLimit" },
+      { Header: "Registration Deadline", accessor: "registrationDeadline" },
+      { Header: "Target Gender", accessor: "targetGender" },
+      { Header: "Target Audience", accessor: "targetAudience" },
+      { Header: "Registration Required", accessor: "registrationRequired" },
+      { Header: "Additional Requirements", accessor: "additionalRequirements" },
+      { Header: "Certificate Offered", accessor: "certificateOffered" },
+      { Header: "Volunteer Hours", accessor: "volunteerHours" },
       {
         Header: "Action",
         accessor: "action",
@@ -102,54 +118,85 @@ const StudentListing = () => {
   );
 
   const tableInstance = useTable(
-    { columns: COLUMNS, data: students },
+    { columns: COLUMNS, data: events },
     useGlobalFilter,
     useSortBy,
     usePagination,
     useRowSelect,
     (hooks) => {
       hooks.visibleColumns.push((columns) => [
-        { id: "selection", Header: ({ getToggleAllRowsSelectedProps }) => <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />, Cell: ({ row }) => <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} /> },
+        {
+          id: "selection",
+          Header: ({ getToggleAllRowsSelectedProps }) => (
+            <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
+          ),
+          Cell: ({ row }) => <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />,
+        },
         ...columns,
       ]);
     }
   );
 
-  const { getTableProps, getTableBodyProps, headerGroups, page: tablePage, prepareRow, state, setGlobalFilter } = tableInstance;
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    page: tablePage,
+    prepareRow,
+    state,
+    setGlobalFilter,
+  } = tableInstance;
+
   const { globalFilter } = state;
 
   return (
     <div>
       <div className="flex justify-end mb-4">
-        <Button text="+ Add Student" className="btn-primary" onClick={() => navigate("/student-form/add")} />
+        <Button
+          text="+ Add Event"
+          className="btn-primary"
+          onClick={() => navigate("/event-form/add")}
+        />
       </div>
       <Card noborder>
         <div className="md:flex justify-between items-center mb-6">
-          <h4 className="card-title">Students</h4>
+          <h4 className="card-title">Events</h4>
           <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
         </div>
+
         <div className="overflow-x-auto -mx-6">
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden">
-              <table {...getTableProps()} className="min-w-full divide-y divide-slate-100 table-fixed dark:divide-slate-700">
+              <table
+                {...getTableProps()}
+                className="min-w-full divide-y divide-slate-100 table-fixed dark:divide-slate-700"
+              >
                 <thead className="border-t border-slate-100 dark:border-slate-800">
                   {headerGroups.map((headerGroup) => (
                     <tr {...headerGroup.getHeaderGroupProps()}>
                       {headerGroup.headers.map((column) => (
-                        <th {...column.getHeaderProps(column.getSortByToggleProps())} className="table-th">
+                        <th
+                          {...column.getHeaderProps(column.getSortByToggleProps())}
+                          className="table-th"
+                        >
                           {column.render("Header")}
                         </th>
                       ))}
                     </tr>
                   ))}
                 </thead>
-                <tbody {...getTableBodyProps()} className="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700">
+                <tbody
+                  {...getTableBodyProps()}
+                  className="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700"
+                >
                   {tablePage.map((row) => {
                     prepareRow(row);
                     return (
                       <tr {...row.getRowProps()}>
                         {row.cells.map((cell) => (
-                          <td {...cell.getCellProps()} className="table-td">{cell.render("Cell")}</td>
+                          <td {...cell.getCellProps()} className="table-td">
+                            {cell.render("Cell")}
+                          </td>
                         ))}
                       </tr>
                     );
@@ -164,4 +211,4 @@ const StudentListing = () => {
   );
 };
 
-export default StudentListing;
+export default EventListing;

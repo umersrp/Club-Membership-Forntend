@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+
+
+
 @layer base {
   body {
     @apply h-full overflow-x-hidden dark:text-slate-300 text-slate-600 font-normal;
@@ -85,6 +88,74 @@
     // }
   }
 }
+
+
+
+.product-view .product-name{
+  font-size: 24px;
+  color: #2874f0;
+}
+.product-view .product-name .label-stock{
+  font-size: 13px;
+  padding: 4px 13px;
+  border-radius: 5px;
+  color: #fff;
+  box-shadow: 0 0.125rem 0.25rem rgb(0 0 0 / 8%);
+  float: right;
+}
+.product-view .product-path{
+  font-size: 13px;
+  font-weight: 500;
+  color: #252525;
+  margin-bottom: 16px;
+}
+.product-view .selling-price{
+  font-size: 26px;
+  color: #000;
+  font-weight: 600;
+  margin-right: 8px;
+}
+.product-view .original-price{
+  font-size: 18px;
+  color: #937979;
+  font-weight: 400;
+  text-decoration: line-through;
+}
+.product-view .btn1{
+  border: 1px solid;
+  margin-right: 3px;
+  border-radius: 0px;
+  font-size: 14px;
+  margin-top: 10px;
+}
+.product-view .btn1:hover{
+  background-color: #2874f0;
+  color: #fff;
+}
+.product-view .input-quantity{
+  border: 1px solid #000;
+  margin-right: 3px;
+  font-size: 12px;
+  margin-top: 10px;
+  width: 58px;
+  outline: none;
+  text-align: center;
+}
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 1s ease-in-out forwards;
+}
+/* Product View */
 @layer components {
   @import "components/table.scss";
   @import "components/map.scss";
@@ -112,6 +183,18 @@
   @import "utility/calander";
   @import "utility/full-calender";
   @import "components/print.scss";
+  @import "~font-awesome/css/font-awesome.min.css";
+
+   /* Reusable label class */
+  .field-label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+
+  /* Reusable input/select field class */
+  .input-field {
+    @apply border-[2px] w-full h-10 p-2 rounded-md;
+  }
+
 
 }
 @layer utilities {

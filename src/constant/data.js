@@ -1,45 +1,112 @@
-export const menuItems = [
-  {
-    isHeadr: true,
-    title: "menu",
+export const clubLeaderMenu = [
+   {
+    title: "New Club ",
+    icon: "heroicons:square-2-stack",
+    link: "new-club-listing",
   },
+  {
+    title: "Student",
+    icon: "heroicons:academic-cap",
+    link: "student-listing",
+  },
+];
 
+export const studentMenu = [
   {
-    title: "Dashboard",
-    icon: "heroicons-outline:home",
-    isOpen: true,
-    isHide: true,
-    child: [
-      {
-        childtitle: "Student",
-        childlink: "student-listing",
-      },
-      {
-        childtitle: "Document",
-        childlink: "document-listing",
-      },
-      // {
-      //   childtitle: "Analytics Dashboard",
-      //   childlink: "dashboard",
-      // },
-      // {
-      //   childtitle: "Ecommerce Dashboard",
-      //   childlink: "ecommerce",
-      // },
-      // {
-      //   childtitle: "Project  Dashbaord",
-      //   childlink: "project",
-      // },
-      // {
-      //   childtitle: " CRM Dashbaord",
-      //   childlink: "crm",
-      // },
-      // {
-      //   childtitle: "Banking Dashboard",
-      //   childlink: "banking",
-      // },
-    ],
+    title: "Club Listing",
+    icon: "heroicons:identification",
+    link: "club-listing",
   },
+];
+
+
+export const menuItems = [
+  // {
+  //   isHeadr: true,
+  //   title: "menu",
+  // },
+  // {
+  //   title: "Student",
+  //   icon: "heroicons:academic-cap",
+  //   link: "student-listing",
+  // },
+  {
+    title: "Club Leader",
+    icon: "heroicons:user-group",
+    link: "club-leader-listing",
+  },
+  {
+    title: "New Club ",
+    icon: "heroicons:square-2-stack",
+    link: "new-club-listing",
+  },
+   {
+    title: "Events",
+    icon: "heroicons:calendar-days",
+    link: "event-listing",
+  },
+  {
+    title: "Club Application",
+    icon: "heroicons:document-arrow-down",
+    link: "club-application-listing",
+  },
+  {
+    title: "Event Registration", 
+    icon: "heroicons:identification",
+    link: "event-registration-listing",
+  },
+  //  {
+  //   title: "Club Listing", 
+  //   icon: "heroicons:identification",
+  //   link: "club-listing",
+  // },
+
+  // {
+  //   title: "Dashboard",
+  //   icon: "heroicons-outline:home",
+  //   isOpen: true,
+  //   isHide: true,
+  //   child: [
+  // {
+  //   childtitle: "Student",
+  //   childlink: "student-listing",
+  // },
+  // {
+  //   childtitle: "Forms",
+  //   childlink: "forms-listing",
+  // },
+  //  {
+  //   childtitle: "Student",
+  //   icon: "heroicons-outline:document",
+  // childlink: "student-listing",
+  // },
+  // {
+  //   childtitle: "Club Leader",
+  //   icon: "heroicons-outline:document",
+  //   childlink: "club-leader-listing",
+  // },
+  //     // {
+  //     //   childtitle: "Analytics Dashboard",
+  //     //   childlink: "dashboard",
+  //     // },
+  //     // {
+  //     //   childtitle: "Ecommerce Dashboard",
+  //     //   childlink: "ecommerce",
+  //     // },
+  //     // {
+  //     //   childtitle: "Project  Dashbaord",
+  //     //   childlink: "project",
+  //     // },
+  //     // {
+  //     //   childtitle: " CRM Dashbaord",
+  //     //   childlink: "crm",
+  //     // },
+  //     // {
+  //     //   childtitle: "Banking Dashboard",
+  //     //   childlink: "banking",
+  //     // },
+  //   ],
+  // },
   // {
   //   title: "changelog",
   //   icon: "heroicons:arrow-trending-up",
@@ -499,8 +566,10 @@ export const menuItems = [
   //         },
   //       ],
   //     },
-  //   ],
-  // },
+
+
+  //     ],
+  //   },
 ];
 
 export const topMenu = [

@@ -15,60 +15,22 @@ import {
 } from "react-table";
 import GlobalFilter from "../../table/react-tables/GlobalFilter";
 
-const IndeterminateCheckbox = React.forwardRef(
-  ({ indeterminate, ...rest }, ref) => {
-    const defaultRef = React.useRef();
-    const resolvedRef = ref || defaultRef;
+const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
+  const defaultRef = React.useRef();
+  const resolvedRef = ref || defaultRef;
+  React.useEffect(() => {
+    if (resolvedRef && resolvedRef.current) resolvedRef.current.indeterminate = indeterminate;
+  }, [resolvedRef, indeterminate]);
+  return <input type="checkbox" ref={resolvedRef} {...rest} className="table-checkbox" />;
+});
 
-    React.useEffect(() => {
-      resolvedRef.current.indeterminate = indeterminate;
-    }, [resolvedRef, indeterminate]);
-
-    return (
-      <input
-        type="checkbox"
-        ref={resolvedRef}
-        {...rest}
-        className="table-checkbox"
-      />
-    );
-  }
-);
-
-const DocumentListing = () => {
+const ClubLeadersListing = () => {
   const navigate = useNavigate();
-  const [documents, setDocuments] = useState([]);
+  const [leaders, setLeaders] = useState([]);
 
-  // Pagination states (dummy for now — update if backend supports)
+  // Dummy pagination state (replace with backend pagination if available)
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-
-  const handleAction = async (action, row) => {
-    if (action === "edit") {
-      navigate(`/add-document/${row._id}`, { state: { mode: "edit" } });
-    }
-    if (action === "view") {
-      navigate(`/add-document/${row._id}`, { state: { mode: "view" } });
-    }
-    if (action === "delete") {
-      try {
-        const token = localStorage.getItem("token");
-        await axios.delete(
-          `${process.env.REACT_APP_BASE_URL}/documents/delete/${row._id}`,
-          {
-            headers: { Authorization: `${token}` },
-          }
-        );
-
-        // instantly update UI
-        setDocuments((prev) => prev.filter((doc) => doc._id !== row._id));
-      } catch (error) {
-        console.error("Error deleting document:", error);
-      }
-    }
-  };
-
-
 
   const actions = [
     { name: "view", icon: "heroicons-outline:eye" },
@@ -76,25 +38,43 @@ const DocumentListing = () => {
     { name: "delete", icon: "heroicons-outline:trash" },
   ];
 
-  // Fetch Documents API
-  useEffect(() => {
-    const fetchDocuments = async () => {
+  const handleAction = async (action, row) => {
+    if (action === "edit") {
+      navigate(`/club-leader-form/${row._id}`, { state: { mode: "edit" } });
+    }
+    if (action === "view") {
+      navigate(`/club-leader-form/${row._id}`, { state: { mode: "view" } });
+    }
+    if (action === "delete") {
+      const yes = window.confirm("Are you sure you want to delete this leader?");
+      if (!yes) return;
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}/documents/GetAll`,
-          {
-            headers: { Authorization: `${token}` },
-          }
+        await axios.delete(
+          `${process.env.REACT_APP_BASE_URL}/club-leaders/delete/${row._id}`,
+          { headers: { Authorization: `${token}` } }
         );
+        setLeaders((prev) => prev.filter((l) => l._id !== row._id));
+      } catch (err) {
+        console.error("Error deleting leader:", err);
+      }
+    }
+  };
 
-        setDocuments(response.data.data || []);
-      } catch (error) {
-        console.error("Error fetching documents:", error);
+  // Fetch leaders
+  useEffect(() => {
+    const fetchLeaders = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/club-leaders/GetAll`, {
+          headers: { Authorization: `${token}` },
+        });
+        setLeaders(res.data.data || []);
+      } catch (err) {
+        console.error("Error fetching leaders:", err);
       }
     };
-
-    fetchDocuments();
+    fetchLeaders();
   }, []);
 
   const COLUMNS = useMemo(
@@ -102,77 +82,49 @@ const DocumentListing = () => {
       {
         Header: "S.No",
         id: "serialNo",
-        Cell: (row) => (
-          <span>{row.row.index + 1 + (page - 1) * limit}</span>
-        ),
+        Cell: (row) => <span>{row.row.index + 1 + (page - 1) * limit}</span>,
       },
       {
-        Header: "Tite",
-        accessor: (row) => row?.title || row?.description,
+        Header: "Student ID",
+        accessor: "studentId",
+        Cell: (row) => <span className="text-sm text-slate-600">{row?.cell?.value || "-"}</span>,
+      },
+      {
+        Header: "Club",
+        accessor: "club",
+        Cell: (row) => <span className="text-sm text-slate-600">{row?.cell?.value || "-"}</span>,
+      },
+      {
+        Header: "Role",
+        accessor: (row) => (row.role === "Other" ? row.customRole || "Other" : row.role),
+        Cell: (row) => <span className="text-sm text-slate-600">{row?.cell?.value || "-"}</span>,
+      },
+      {
+        Header: "Effective Date",
+        accessor: "effectiveDate",
         Cell: (row) => (
-          <span className="text-sm text-slate-600 dark:text-slate-300">
-            {row?.cell?.value || "-"}
+          <span>
+            {row?.cell?.value ? new Date(row?.cell?.value).toLocaleDateString("en-GB") : "-"}
           </span>
         ),
       },
       {
-        Header: "Doc Type",
-        accessor: "documentType.documentType",
-        Cell: (row) => (
-          <span className="text-sm text-slate-600 dark:text-slate-300">
-            {row?.cell?.value || "-"}
-          </span>
-        ),
-      },
-      {
-        Header: "Document",
-        accessor: "documentFile", // <-- make sure your backend returns a file path or URL here
-        Cell: ({ row }) => {
-          const fileUrl = row.original?.documentFile; // Adjust key if different
-          return fileUrl ? (
-            <a
-              href={fileUrl.startsWith("http") ? fileUrl : `${process.env.REACT_APP_BASE_URL}/${fileUrl}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 underline"
-            >
-              View Document
-            </a>
-          ) : (
-            <span>-</span>
-          );
-        },
-      },
-
-      {
-        Header: "Doc Brief",
-        accessor: (row) => row?.documnetBrief || row?.description,
-        Cell: (row) => (
-          <span className="text-sm text-slate-600 dark:text-slate-300">
-            {row?.cell?.value || "-"}
-          </span>
-        ),
+        Header: "Notes",
+        accessor: "notes",
+        Cell: (row) => <span className="text-sm text-slate-600">{row?.cell?.value || "-"}</span>,
       },
       {
         Header: "Created At",
         accessor: "createdAt",
         Cell: (row) => (
-          <span>
-            {row?.cell?.value
-              ? new Date(row?.cell?.value).toLocaleDateString("en-GB")
-              : "-"}
-          </span>
+          <span>{row?.cell?.value ? new Date(row?.cell?.value).toLocaleDateString("en-GB") : "-"}</span>
         ),
       },
       {
         Header: "Updated At",
         accessor: "updatedAt",
         Cell: (row) => (
-          <span>
-            {row?.cell?.value
-              ? new Date(row?.cell?.value).toLocaleDateString("en-GB")
-              : "-"}
-          </span>
+          <span>{row?.cell?.value ? new Date(row?.cell?.value).toLocaleDateString("en-GB") : "-"}</span>
         ),
       },
       {
@@ -180,7 +132,7 @@ const DocumentListing = () => {
         accessor: "action",
         Cell: ({ row }) => (
           <Dropdown
-            classMenuItems="right-0 w-[140px] top-[110%]"
+            className="w-[140px]"
             label={
               <span className="text-xl text-center block w-full">
                 <Icon icon="heroicons-outline:dots-vertical" />
@@ -192,10 +144,11 @@ const DocumentListing = () => {
                 <Menu.Item key={i}>
                   <div
                     onClick={() => handleAction(item.name, row.original)}
-                    className={`${item.name === "delete"
-                      ? "bg-danger-500 text-danger-500 bg-opacity-30 hover:bg-opacity-100 hover:text-white"
-                      : "hover:bg-slate-900 hover:text-white dark:hover:bg-slate-600 dark:hover:bg-opacity-50"
-                      } w-full px-4 py-2 text-sm cursor-pointer flex space-x-2 items-center`}
+                    className={`${
+                      item.name === "delete"
+                        ? "bg-danger-500 text-danger-500 bg-opacity-30 hover:bg-opacity-100 hover:text-white"
+                        : "hover:bg-slate-900 hover:text-white dark:hover:bg-slate-600 dark:hover:bg-opacity-50"
+                    } w-full px-4 py-2 text-sm cursor-pointer flex space-x-2 items-center`}
                   >
                     <span className="text-base">
                       <Icon icon={item.icon} />
@@ -212,9 +165,8 @@ const DocumentListing = () => {
     [page, limit]
   );
 
-  const data = useMemo(() => documents, [documents]);
+  const data = useMemo(() => leaders, [leaders]);
 
-  // react-table instance
   const tableInstance = useTable(
     { columns: COLUMNS, data },
     useGlobalFilter,
@@ -228,9 +180,7 @@ const DocumentListing = () => {
           Header: ({ getToggleAllRowsSelectedProps }) => (
             <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
           ),
-          Cell: ({ row }) => (
-            <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-          ),
+          Cell: ({ row }) => <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />,
         },
         ...columns,
       ]);
@@ -253,22 +203,21 @@ const DocumentListing = () => {
     <div>
       <div className="flex justify-end mb-4">
         <Button
-          text="+ Create Document"
-          className="btn-dark"
+          text="+ Add Leader"
+          className="btn-primary"
           type="button"
-          onClick={() => navigate("/add-document/add")}
+          onClick={() => navigate("/club-leader-form/add")}
         />
       </div>
+
       <Card noborder>
         <div className="md:flex justify-between items-center mb-6">
-          <h4 className="card-title">Documents</h4>
-
+          <h4 className="card-title">Club Leaders</h4>
           <div className="flex items-center gap-4">
             <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
           </div>
         </div>
 
-        {/* Table */}
         <div className="overflow-x-auto -mx-6">
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden">
@@ -280,17 +229,10 @@ const DocumentListing = () => {
                   {headerGroups.map((headerGroup) => (
                     <tr {...headerGroup.getHeaderGroupProps()}>
                       {headerGroup.headers.map((column) => (
-                        <th
-                          {...column.getHeaderProps(column.getSortByToggleProps())}
-                          className="table-th"
-                        >
+                        <th {...column.getHeaderProps(column.getSortByToggleProps())} className="table-th">
                           {column.render("Header")}
                           <span>
-                            {column.isSorted
-                              ? column.isSortedDesc
-                                ? " 🔽"
-                                : " 🔼"
-                              : ""}
+                            {column.isSorted ? (column.isSortedDesc ? " 🔽" : " 🔼") : ""}
                           </span>
                         </th>
                       ))}
@@ -320,10 +262,10 @@ const DocumentListing = () => {
           </div>
         </div>
 
-        {/* Dummy pagination (replace if backend provides real pagination) */}
+        {/* Dummy pagination */}
         <div className="md:flex justify-between items-center mt-6">
           <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
-            Page {page} | Total {documents.length} documents
+            Page {page} | Total {leaders.length} leaders
           </span>
 
           <div className="flex items-center space-x-3">
@@ -347,4 +289,4 @@ const DocumentListing = () => {
   );
 };
 
-export default DocumentListing;
+export default ClubLeadersListing;

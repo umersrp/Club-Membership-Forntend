@@ -1,16 +1,18 @@
 import React, { useRef, useEffect, useState } from "react";
 import SidebarLogo from "./Logo";
 import Navmenu from "./Navmenu";
-import { menuItems } from "@/constant/data";
+// import { menuItems } from "@/constant/data";
 import SimpleBar from "simplebar-react";
 import useSidebar from "@/hooks/useSidebar";
 import useSemiDark from "@/hooks/useSemiDark";
 import useSkin from "@/hooks/useSkin";
 import svgRabitImage from "@/assets/images/svg/rabit.svg";
+import { getMenuByRole } from "@/constant/get-menu-by-role"; 
 
 const Sidebar = () => {
   const scrollableNodeRef = useRef();
   const [scroll, setScroll] = useState(false);
+  const [menuItems, setMenuItems] = useState([]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,9 +24,17 @@ const Sidebar = () => {
     };
     scrollableNodeRef.current.addEventListener("scroll", handleScroll);
   }, [scrollableNodeRef]);
+  
 
   const [collapsed, setMenuCollapsed] = useSidebar();
   const [menuHover, setMenuHover] = useState(false);
+
+    useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user")); // or from your auth state
+    const role = user?.type || "student"; // fallback role
+    const menu = getMenuByRole(role);
+    setMenuItems(menu);
+  }, []);
 
   // semi dark option
   const [isSemiDark] = useSemiDark();
@@ -58,10 +68,10 @@ const Sidebar = () => {
         ></div>
 
         <SimpleBar
-          className="sidebar-menu px-4 h-[calc(100%-80px)]"
+          className="sidebar-menu px-4 mt-8 h-[calc(100%-80px)]"
           scrollableNodeProps={{ ref: scrollableNodeRef }}
         >
-          <Navmenu menus={menuItems} />
+          <Navmenu menus={menuItems}/>
           {/* {!collapsed && (
             <div className="bg-slate-900 mb-16 mt-24 p-4 relative text-center rounded-2xl text-white">
               <img

@@ -3,79 +3,78 @@ import Checkbox from "@/components/ui/Checkbox";
 import Button from "@/components/ui/Button";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import axios from "axios";
 
 const LoginForm = () => {
   const navigate = useNavigate();
   const [checked, setChecked] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const UserRole = Object.freeze({
-    ADMIN: "admin",
-    STUDENT: "student",
-    TUTOR: "tutor",
-  });
-
-
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
+  const UserRole = Object.freeze({
+    ADMIN: "admin",
+    STUDENT: "student",
+    CLUB_LEADER: "ClubLeader",
+  });
+
+  // ✅ handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-
+  // ✅ handle login API
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const response = await fetch(process.env.REACT_APP_BASE_URL + "/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+         `${process.env.REACT_APP_BASE_URL}/auth/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const result = await response.json();
-      console.log("Login response:", result);
+      console.log("Login Response:", result);
 
-      // Destructure properly
       const { data, message } = result;
 
-      // Check API response
+      // if backend returns a failed status
       if (!response.ok) throw new Error(message || "Login failed");
-      if (!data.token) throw new Error("Invalid credentials");
+      if (!data?.token) throw new Error("Invalid credentials");
 
-      // Save token and user to localStorage
+      // ✅ Save token & user data
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("user-name", data.user.name);
+      localStorage.setItem("user-role", data.user.type);
 
       toast.success("Login Successful!");
-      console.log("Stored user:", localStorage.getItem("user"));
-      console.log("Token stored:", localStorage.getItem("token"));
-      console.log("User stored:", localStorage.getItem("user"));
-      // // Navigate after saving user
-      // setTimeout(() => navigate("/dashboard"), 500);
 
+      // ✅ Navigate by role
       const userRole = data.user.type;
-
       switch (userRole) {
         case UserRole.ADMIN:
-          navigate("/dashboard");
+          navigate("/new-club-listing"); // your admin page
           break;
-        case UserRole.STUDENT:
-          navigate("/studentdashboard");
-          break;
-        case UserRole.TUTOR:
-          navigate("/dashboard");
-          break;
-        default:
-          throw new Error("Invalid role");
-      }
 
+        case UserRole.STUDENT:
+          navigate("/club-listing"); // student dashboard or club listing
+          break;
+
+        case UserRole.CLUB_LEADER:
+          navigate("/student-listing"); // club leader page
+          break;
+
+        default:
+          throw new Error("Unknown user role");
+      }
     } catch (err) {
       toast.error(err.message || "Something went wrong");
     } finally {
@@ -85,7 +84,7 @@ const LoginForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <label htmlFor="">Email</label>
+      <label>Email</label>
       <input
         name="email"
         type="email"
@@ -95,7 +94,7 @@ const LoginForm = () => {
         className="form-control h-[48px] w-full px-3 border rounded mb-4"
       />
 
-      <label htmlFor="">password</label>
+      <label>Password</label>
       <input
         name="password"
         type="password"
@@ -122,7 +121,7 @@ const LoginForm = () => {
       <Button
         type="submit"
         text={loading ? "Signing in..." : "Sign in"}
-        className="btn btn-dark block w-full text-center"
+        className="btn btn-primary block w-full text-center"
         isLoading={loading}
       />
     </form>

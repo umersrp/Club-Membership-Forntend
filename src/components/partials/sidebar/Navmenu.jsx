@@ -85,9 +85,16 @@ const Navmenu = ({ menus }) => {
               ${activeSubmenu === i ? "open" : ""}
               ${locationName === item.link ? "menu-item-active" : ""}`}
           >
-            {/* single menu with no childred*/}
+            {/* single menu with no children */}
             {!item.child && !item.isHeadr && (
-              <NavLink className="menu-link" to={item.link}>
+              <NavLink
+                className={({ isActive }) =>
+                  `menu-link flex items-center text-lg px-3 py-2 rounded-md transition-colors
+                  hover:bg-gray-100 hover:text-grey
+                  ${isActive ? "bg-gray-300 " : "text-gray-700"}`
+                }
+                to={item.link}
+              >
                 <span className="menu-icon flex-grow-0">
                   <Icon icon={item.icon} />
                 </span>
