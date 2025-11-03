@@ -142,6 +142,7 @@ import EventRegistrationListing from "./pages/dashboard/eventRegistration/event-
 import EventRegistrationForm from "./pages/dashboard/eventRegistration/[id]/event-registration-form";
 import ClubListing from "./pages/dashboard/clubListing/club-listing";
 import ClubRequestListing from "./pages/dashboard/clubRequest/clubRequest";
+import ClubDetail from "./pages/dashboard/clubListing/[id]/club-detail";
 
 
 
@@ -191,6 +192,8 @@ function App() {
           <Route path="club-request-listing" element={<ClubRequestListing />} />
 
           <Route path="club-listing" element={<ClubListing />} />
+          <Route path="club-details/:id" element={<ClubDetail/>} />
+          
 
           <Route path="ecommerce" element={<Ecommerce />} />
           <Route path="crm" element={<CrmPage />} />

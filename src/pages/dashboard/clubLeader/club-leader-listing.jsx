@@ -69,7 +69,7 @@ const ClubLeaderListing = () => {
       accessor: "_id",
       Cell: ({ cell }) => (
         <div className="flex space-x-3 rtl:space-x-reverse">
-          <Tippy content="View">
+          <Tippy >
             <button
               className="action-btn"
               onClick={() =>
@@ -81,7 +81,7 @@ const ClubLeaderListing = () => {
               <Icon className="text-green-600" icon="heroicons:eye" />
             </button>
           </Tippy>
-          <Tippy content="Edit">
+          <Tippy >
             <button
               className="action-btn"
               onClick={() =>
@@ -93,7 +93,7 @@ const ClubLeaderListing = () => {
               <Icon className="text-blue-600" icon="heroicons:pencil-square" />
             </button>
           </Tippy>
-          <Tippy content="Delete">
+          <Tippy >
             <button
               className="action-btn"
               onClick={() => confirmDelete(cell.value)}

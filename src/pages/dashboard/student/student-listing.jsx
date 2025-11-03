@@ -193,7 +193,7 @@ const StudentListing = () => {
               <Icon className="text-blue-600" icon="heroicons:pencil-square" />
             </button>
           </Tippy>
-          <Tippy content="Delete">
+          <Tippy >
             <button
               className="action-btn"
               onClick={() => confirmDelete(cell.value)}

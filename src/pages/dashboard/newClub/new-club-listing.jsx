@@ -152,7 +152,7 @@ const NewClubListing = () => {
       Cell: ({ cell }) => (
         <div className="flex space-x-3">
           {/* 👁 View */}
-          <Tippy content="View">
+          <Tippy >
             <button
               onClick={() =>
                 navigate(`/new-club-form/${cell.value}`, {
@@ -165,7 +165,7 @@ const NewClubListing = () => {
           </Tippy>
 
           {/* ✏ Edit */}
-          <Tippy content="Edit">
+          <Tippy >
             <button
               onClick={() =>
                 navigate(`/new-club-form/${cell.value}`, {
@@ -178,7 +178,7 @@ const NewClubListing = () => {
           </Tippy>
 
           {/* 🗑 Delete */}
-          <Tippy content="Delete">
+          <Tippy >
             <button onClick={() => confirmDelete(cell.value)}>
               <Icon className="text-red-700" icon="heroicons:trash" />
             </button>

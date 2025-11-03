@@ -213,7 +213,7 @@ const EventListing = () => {
                     />
                     <Button
                       icon="heroicons-outline:plus-sm"
-                      text="Add Student"
+                      text="Add Events"
                       className="btn font-normal btn-sm bg-gradient-to-r from-[#3AB89D] to-[#3A90B8] text-white border-0 hover:opacity-90"
                       iconClass="text-lg"
                       onClick={() =>

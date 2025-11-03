@@ -1,19 +1,19 @@
 import React from "react";
 import useDarkMode from "@/hooks/useDarkMode";
 import LogoWhite from "@/assets/images/logo/logo-white.svg";
-import Logo from "@/assets/images/logo/logo.png";
+// import Logo from "@/assets/images/logo/logo.svg";
 import { useSelector } from "react-redux";
 const Loading = () => {
   const [isDark] = useDarkMode();
   const { isAuth } = useSelector((state) => state.auth);
   return (
     <div className="flex flex-col items-center justify-center app_height">
-      {!isAuth && (
+      {/* {!isAuth && (
         <div className="mb-3">
           <img src={isDark ? LogoWhite : Logo} alt="Logo" />
         </div>
-      )}
-      <svg
+      )} */}
+      <svg  
         className={`animate-spin ltr:-ml-1 ltr:mr-3 rtl:-mr-1 rtl:ml-3 ${
           isAuth ? "h-6 w-6" : "h-12 w-12"
         } `}

@@ -4,11 +4,6 @@ export const clubLeaderMenu = [
     icon: "heroicons:square-2-stack",
     link: "new-club-listing",
   },
-  {
-    title: "Student",
-    icon: "heroicons:academic-cap",
-    link: "student-listing",
-  },
     {
     title: "Events",
     icon: "heroicons:calendar-days",
