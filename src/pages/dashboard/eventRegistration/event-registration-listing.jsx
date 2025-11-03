@@ -1,275 +1,276 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import React, { useState, useMemo, useEffect } from "react";
 import Card from "@/components/ui/Card";
-import Icon from "@/components/ui/Icon";
 import Button from "@/components/ui/Button";
-import Dropdown from "@/components/ui/Dropdown";
-import { Menu } from "@headlessui/react";
-import {
-  useTable,
-  useRowSelect,
-  useSortBy,
-  useGlobalFilter,
-  usePagination,
-} from "react-table";
-import GlobalFilter from "../../table/react-tables/GlobalFilter";
-
-const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
-  const defaultRef = React.useRef();
-  const resolvedRef = ref || defaultRef;
-  React.useEffect(() => {
-    if (resolvedRef && resolvedRef.current)
-      resolvedRef.current.indeterminate = indeterminate;
-  }, [resolvedRef, indeterminate]);
-  return <input type="checkbox" ref={resolvedRef} {...rest} className="table-checkbox" />;
-});
+import { toast } from "react-toastify";
+import { motion } from "framer-motion";
+import Select from "@/components/ui/Select";
+import fallbackLogo from "@/assets/images/all-img/widget-bg-5.png";
+import EventRegistrationModal from "../eventRegistration/[id]/event-registration-form";
 
 const EventRegistrationListing = () => {
-  const navigate = useNavigate();
-  const [registrations, setRegistrations] = useState([]);
-  const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [events, setEvents] = useState([]);
+  const [registeredEvents, setRegisteredEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [registerEvent, setRegisterEvent] = useState(null);
+  const [filters, setFilters] = useState({
+    category: "",
+    targetAudience: "",
+    targetGender: "",
+  });
+  const [loading, setLoading] = useState(true);
 
-  const actions = [
-    { name: "view", icon: "heroicons-outline:eye" },
-    { name: "edit", icon: "heroicons:pencil-square" },
-    { name: "delete", icon: "heroicons-outline:trash" },
-  ];
-
-  const handleAction = async (action, row) => {
-    if (action === "edit") {
-      navigate(`/event-registration-form/${row._id}`, { state: { mode: "edit" } });
-    }
-    if (action === "view") {
-      navigate(`/event-registration-form/${row._id}`, { state: { mode: "view" } });
-    }
-    if (action === "delete") {
-      const yes = window.confirm("Are you sure you want to delete this registration?");
-      if (!yes) return;
-      try {
-        const token = localStorage.getItem("token");
-        await axios.delete(
-          `${process.env.REACT_APP_BASE_URL}/event-registrations/delete/${row._id}`,
-          { headers: { Authorization: `${token}` } }
-        );
-        setRegistrations((prev) => prev.filter((r) => r._id !== row._id));
-      } catch (err) {
-        console.error("Error deleting registration:", err);
-      }
-    }
-  };
-
-  // Fetch registrations
+  // ✅ Mock Event Data
   useEffect(() => {
-    const fetchRegistrations = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}/event-registrations/GetAll`,
-          { headers: { Authorization: `${token}` } }
-        );
-        setRegistrations(res.data.data || []);
-      } catch (err) {
-        console.error("Error fetching registrations:", err);
-      }
-    };
-    fetchRegistrations();
+    const mockEvents = [
+      {
+        _id: "1",
+        eventTitle: "Tech Innovation Workshop",
+        eventDescription:
+          "A hands-on workshop focusing on the latest trends in AI, blockchain, and data science.",
+        eventCategory: "Workshop",
+        dateTime: "2025-11-15T10:00",
+        location: "Auditorium Hall A",
+        duration: 3,
+        capacityLimit: 100,
+        registrationDeadline: "2025-11-10",
+        targetGender: "All",
+        targetAudience: "Computer Science and Engineering Students",
+        eventImage:
+          "https://upload.wikimedia.org/wikipedia/commons/6/6a/Artificial_intelligence_logo.png",
+        registrationRequired: "Yes",
+        additionalRequirements: "Bring your own laptop with Python installed.",
+        certificateOffered: "Yes",
+        volunteerHours: 2,
+      },
+      {
+        _id: "2",
+        eventTitle: "Cultural Fusion Night",
+        eventDescription:
+          "An evening celebrating diverse cultures with music, dance, and food from around the world.",
+        eventCategory: "Social",
+        dateTime: "2025-12-01T18:00",
+        location: "University Amphitheatre",
+        duration: 4,
+        capacityLimit: 300,
+        registrationDeadline: "2025-11-28",
+        targetGender: "All",
+        targetAudience: "All Students and Faculty",
+        eventImage:
+          "https://upload.wikimedia.org/wikipedia/commons/2/26/Palette_icon.png",
+        registrationRequired: "No",
+        additionalRequirements: "",
+        certificateOffered: "No",
+        volunteerHours: 0,
+      },
+      {
+        _id: "3",
+        eventTitle: "Interdepartmental Sports Competition",
+        eventDescription:
+          "A competitive sports event between different university departments — cricket, football, and basketball.",
+        eventCategory: "Competition",
+        dateTime: "2025-11-25T09:00",
+        location: "Sports Ground",
+        duration: 6,
+        capacityLimit: 150,
+        registrationDeadline: "2025-11-20",
+        targetGender: "All",
+        targetAudience: "Sports Enthusiasts and Department Teams",
+        eventImage:
+          "https://upload.wikimedia.org/wikipedia/commons/f/f1/Soccer_ball_icon.svg",
+        registrationRequired: "Yes",
+        additionalRequirements: "Teams must wear departmental jerseys.",
+        certificateOffered: "Yes",
+        volunteerHours: 3,
+      },
+    ];
+
+    // Simulate API delay
+    setTimeout(() => {
+      setEvents(mockEvents);
+      setLoading(false);
+    }, 800);
   }, []);
 
-  const COLUMNS = useMemo(
-    () => [
-      {
-        Header: "S.No",
-        id: "serialNo",
-        Cell: (row) => <span>{row.row.index + 1 + (page - 1) * limit}</span>,
-      },
-      {
-        Header: "Confirmation of Attendance",
-        accessor: "confirmationOfAttendance",
-      },
-      {
-        Header: "Event Questions",
-        accessor: "eventQuestions",
-      },
-      {
-        Header: "Emergency Contact",
-        accessor: "emergencyContact",
-      },
-      {
-        Header: "Special Requirements",
-        accessor: "specialRequirements",
-      },
-      {
-        Header: "Created At",
-        accessor: "createdAt",
-        Cell: (row) => (
-          <span>
-            {row?.cell?.value
-              ? new Date(row?.cell?.value).toLocaleDateString("en-GB")
-              : "-"}
-          </span>
-        ),
-      },
-      {
-        Header: "Action",
-        accessor: "action",
-        Cell: ({ row }) => (
-          <Dropdown
-            className="w-[140px]"
-            label={
-              <span className="text-xl text-center block w-full">
-                <Icon icon="heroicons-outline:dots-vertical" />
-              </span>
-            }
-          >
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              {actions.map((item, i) => (
-                <Menu.Item key={i}>
-                  <div
-                    onClick={() => handleAction(item.name, row.original)}
-                    className={`${
-                      item.name === "delete"
-                        ? "bg-danger-500 text-danger-500 bg-opacity-30 hover:bg-opacity-100 hover:text-white"
-                        : "hover:bg-slate-900 hover:text-white dark:hover:bg-slate-600 dark:hover:bg-opacity-50"
-                    } w-full px-4 py-2 text-sm cursor-pointer flex space-x-2 items-center`}
-                  >
-                    <span className="text-base">
-                      <Icon icon={item.icon} />
-                    </span>
-                    <span className="capitalize">{item.name}</span>
-                  </div>
-                </Menu.Item>
-              ))}
-            </div>
-          </Dropdown>
-        ),
-      },
-    ],
-    [page, limit]
-  );
+  // ✅ Extract filter options
+  const categories = [...new Set(events.map((e) => e.eventCategory))];
+  const genders = [...new Set(events.map((e) => e.targetGender))];
+  const audiences = [...new Set(events.map((e) => e.targetAudience))];
 
-  const data = useMemo(() => registrations, [registrations]);
+  // ✅ Filtering logic
+  const filteredEvents = useMemo(() => {
+    return events.filter((e) => {
+      return (
+        (!filters.category || e.eventCategory === filters.category) &&
+        (!filters.targetGender || e.targetGender === filters.targetGender) &&
+        (!filters.targetAudience || e.targetAudience === filters.targetAudience)
+      );
+    });
+  }, [events, filters]);
 
-  const tableInstance = useTable(
-    { columns: COLUMNS, data },
-    useGlobalFilter,
-    useSortBy,
-    usePagination,
-    useRowSelect,
-    (hooks) => {
-      hooks.visibleColumns.push((columns) => [
-        {
-          id: "selection",
-          Header: ({ getToggleAllRowsSelectedProps }) => (
-            <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
-          ),
-          Cell: ({ row }) => <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />,
-        },
-        ...columns,
-      ]);
+  const handleFilterChange = (selectedOption, name) => {
+    setFilters({ ...filters, [name]: selectedOption ? selectedOption.value : "" });
+  };
+
+  const handleReset = () => {
+    setFilters({ category: "", targetAudience: "", targetGender: "" });
+  };
+
+  // ✅ Handle Registration
+  const handleRegister = (eventTitle) => {
+    if (registeredEvents.includes(eventTitle)) {
+      toast.info(`You already registered for "${eventTitle}"`);
+      return;
     }
-  );
+    setRegisteredEvents([...registeredEvents, eventTitle]);
+    toast.success(`Successfully registered for "${eventTitle}"`);
+  };
 
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    page: tablePage,
-    prepareRow,
-    state,
-    setGlobalFilter,
-  } = tableInstance;
-
-  const { globalFilter } = state;
+  if (loading) {
+    return <p className="text-center text-gray-500">Loading events...</p>;
+  }
 
   return (
-    <div>
-      <div className="flex justify-end mb-4">
-        <Button
-          text="+ Add Registration"
-          className="btn-primary"
-          type="button"
-          onClick={() => navigate("/event-registration-form/add")}
-        />
-      </div>
+    <>
+      <Card className="p-6">
+        <div className="flex justify-between mb-3">
+          <h2 className="text-2xl font-bold mb-6 text-center">Event Directory</h2>
 
-      <Card noborder>
-        <div className="md:flex justify-between items-center mb-6">
-          <h4 className="card-title">Event Registrations</h4>
-          <div className="flex items-center gap-4">
-            <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
+            <Select
+              options={[
+                { value: "", label: "All Categories" },
+                ...categories.map((c) => ({ value: c, label: c })),
+              ]}
+              value={
+                filters.category
+                  ? { value: filters.category, label: filters.category }
+                  : null
+              }
+              onChange={(selected) => handleFilterChange(selected, "category")}
+              placeholder="Select Category"
+            />
+
+            <Select
+              options={[
+                { value: "", label: "All Genders" },
+                ...genders.map((g) => ({ value: g, label: g })),
+              ]}
+              value={
+                filters.targetGender
+                  ? { value: filters.targetGender, label: filters.targetGender }
+                  : null
+              }
+              onChange={(selected) => handleFilterChange(selected, "targetGender")}
+              placeholder="Select Gender"
+            />
+
+            <Select
+              options={[
+                { value: "", label: "All Audiences" },
+                ...audiences.map((a) => ({ value: a, label: a })),
+              ]}
+              value={
+                filters.targetAudience
+                  ? { value: filters.targetAudience, label: filters.targetAudience }
+                  : null
+              }
+              onChange={(selected) => handleFilterChange(selected, "targetAudience")}
+              placeholder="Select Audience"
+            />
+
+            <Button
+              text="Reset Filters"
+              className="bg-primary-600 h-10 hover:bg-primary-900 text-white"
+              onClick={handleReset}
+            />
           </div>
         </div>
 
-        <div className="overflow-x-auto -mx-6">
-          <div className="inline-block min-w-full align-middle">
-            <div className="overflow-hidden">
-              <table
-                className="min-w-full divide-y divide-slate-100 table-fixed dark:divide-slate-700"
-                {...getTableProps()}
+        {/* ✅ Event Cards */}
+        {filteredEvents.length === 0 ? (
+          <p className="text-center text-gray-500">No events match your filters.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredEvents.map((event, index) => (
+              <motion.section
+                key={event._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                whileHover={{
+                  scale: 1.03,
+                  boxShadow: "0px 10px 20px rgba(0,0,0,0.15)",
+                }}
+                className="overflow-hidden shadow-md rounded-2xl border border-gray-200 bg-white dark:bg-slate-800 hover:shadow-lg transition flex flex-col"
               >
-                <thead className="border-t border-slate-100 dark:border-slate-800">
-                  {headerGroups.map((headerGroup) => (
-                    <tr {...headerGroup.getHeaderGroupProps()}>
-                      {headerGroup.headers.map((column) => (
-                        <th {...column.getHeaderProps(column.getSortByToggleProps())} className="table-th">
-                          {column.render("Header")}
-                          <span>
-                            {column.isSorted ? (column.isSortedDesc ? " 🔽" : " 🔼") : ""}
-                          </span>
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
+                <motion.img
+                  src={event.eventImage || fallbackLogo}
+                  alt={event.eventTitle}
+                  className="w-full h-48 object-cover"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.3 }}
+                  onError={(e) => (e.target.src = fallbackLogo)}
+                />
 
-                <tbody
-                  className="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700"
-                  {...getTableBodyProps()}
-                >
-                  {tablePage.map((row) => {
-                    prepareRow(row);
-                    return (
-                      <tr {...row.getRowProps()}>
-                        {row.cells.map((cell) => (
-                          <td {...cell.getCellProps()} className="table-td">
-                            {cell.render("Cell")}
-                          </td>
-                        ))}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                <div className="p-5 flex flex-col flex-grow">
+                  <h3 className="text-lg font-semibold mb-1">{event.eventTitle}</h3>
+                  <p className="text-sm text-gray-600 mb-1">
+                    <strong>Category:</strong> {event.eventCategory}
+                  </p>
+                  <p className="text-sm text-gray-600 mb-1">
+                    <strong>Date & Time:</strong>{" "}
+                    {new Date(event.dateTime).toLocaleString()}
+                  </p>
+                  <p className="text-sm text-gray-600 mb-1">
+                    <strong>Location:</strong> {event.location}
+                  </p>
+                  <p className="text-sm text-gray-600 mb-1">
+                    <strong>Audience:</strong> {event.targetAudience}
+                  </p>
+                  <p className="text-sm text-gray-600 mb-2">
+                    <strong>Deadline:</strong> {event.registrationDeadline}
+                  </p>
+
+                  <div className="mt-auto pt-2 flex justify-between gap-2">
+                    <Button
+                      text="View Details"
+                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800"
+                      onClick={() => setSelectedEvent(event)}
+                    />
+
+                    <Button
+                      icon="heroicons-outline:plus-sm"
+                      text="Register"
+                      className="flex-1 btn font-normal btn-sm bg-gradient-to-r from-[#3AB89D] to-[#3A90B8] text-white border-0 hover:opacity-90"
+                      iconClass="text-lg"
+                      onClick={() => setRegisterEvent(event)}
+                    />
+                  </div>
+                </div>
+              </motion.section>
+            ))}
           </div>
-        </div>
+        )}
 
-        {/* Dummy pagination */}
-        <div className="md:flex justify-between items-center mt-6">
-          <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
-            Page {page} | Total {registrations.length} registrations
-          </span>
-
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-            >
-              Prev
-            </button>
-            <button
-              onClick={() => setPage((p) => p + 1)}
-              className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
-        </div>
+        {/* ✅ Event Details Modal */}
+        {selectedEvent && (
+          <EventDetailModal
+            event={selectedEvent}
+            onClose={() => setSelectedEvent(null)}
+          />
+        )}
       </Card>
-    </div>
+
+      {/* ✅ Register Modal */}
+      {registerEvent && (
+        <EventRegistrationModal    
+          event={registerEvent}
+          mode="add"
+          onClose={() => setRegisterEvent(null)}
+        />
+      )}
+    </>
   );
 };
 

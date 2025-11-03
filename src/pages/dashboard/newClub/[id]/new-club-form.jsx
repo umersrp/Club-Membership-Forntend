@@ -9,6 +9,7 @@ const NewClubForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const [students, setStudents] = useState([]);
 
   const mode = location.state?.mode || "add"; // add | view | edit
   const isViewMode = mode === "view";
@@ -18,12 +19,12 @@ const NewClubForm = () => {
     clubName: "",
     clubDescription: "",
     clubCategory: "",
-    targetMajor: "",
+    targetMajor: [],
     targetGender: "",
-    targetYear: "",
-    proposedActivities: "",
-    clubLogo: null,
-    socialLinks: "",
+    targetYear: [],
+    proposedActivities: [],
+    clubLogo: "",
+    socialLinks: [],
     presidentName: "",
     presidentId: "",
     vicePresidentName: "",
@@ -35,6 +36,22 @@ const NewClubForm = () => {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(isViewMode || isEditMode);
 
+  useEffect(() => {
+  const fetchStudents = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/user/getStudentByAdmin`,
+        { headers: { Authorization: `${token}` } }
+      );
+      setStudents(res.data.data || []);
+    } catch (err) {
+      console.error("Error fetching students:", err);
+    }
+  };
+  fetchStudents();
+}, []);
+
   // Fetch existing club data for view/edit
   useEffect(() => {
     const fetchClub = async () => {
@@ -45,7 +62,7 @@ const NewClubForm = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}/new-club/GetById/${id}`,
+          `${process.env.REACT_APP_BASE_URL}/club/${id}`,
           { headers: { Authorization: `${token}` } }
         );
         const club = res.data.data || {};
@@ -86,58 +103,113 @@ const NewClubForm = () => {
     setFormData((prev) => ({ ...prev, clubLogo: e.target.files[0] }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (isViewMode) return;
+ 
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (isViewMode) return;
 
-    if (!formData.clubName.trim())
-      return setMessage("Club Name is required");
-    if (!formData.clubDescription.trim())
-      return setMessage("Club Description is required");
-    if (!formData.clubCategory.trim())
-      return setMessage("Club Category is required");
-    if (!formData.presidentName.trim() || !formData.presidentId.trim())
-      return setMessage("President Name and ID are required");
+  if (!formData.clubName.trim())
+    return setMessage("Club Name is required");
+  if (!formData.clubDescription.trim())
+    return setMessage("Club Description is required");
+  if (!formData.clubCategory.trim())
+    return setMessage("Club Category is required");
+  if (!formData.presidentName.trim() || !formData.presidentId.trim())
+    return setMessage("President Name and ID are required");
 
-    try {
-      const token = localStorage.getItem("token");
-      const form = new FormData();
-      for (const key in formData) {
-        form.append(key, formData[key]);
-      }
+  try {
+    const token = localStorage.getItem("token");
 
-      if (isEditMode) {
-        await axios.put(
-          `${process.env.REACT_APP_BASE_URL}/new-club/update/${id}`,
-          form,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-              Authorization: `${token}`,
-            },
-          }
-        );
-        setMessage("Club updated successfully!");
-      } else {
-        await axios.post(
-          `${process.env.REACT_APP_BASE_URL}/Club/Create`,
-          form,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-              Authorization: `${token}`,
-            },
-          }
-        );
-        setMessage("Club created successfully! Pending admin approval.");
-      }
-
-      setTimeout(() => navigate("/new-clubs"), 900);
-    } catch (err) {
-      console.error("Error saving club:", err);
-      setMessage("Error saving club");
+    // ✅ Upload logo first (if provided)
+    let logoUrl = "";
+    if (formData.clubLogo) {
+      logoUrl = await handleFileUpload(); // keep this as your existing logic
     }
-  };
+
+    // ✅ Convert string fields to arrays if needed
+    const payload = {
+      ...formData,
+      targetMajor:
+        typeof formData.targetMajor === "string"
+          ? formData.targetMajor.split(",").map((s) => s.trim()).filter(Boolean)
+          : formData.targetMajor,
+
+      targetYear:
+        typeof formData.targetYear === "string"
+          ? formData.targetYear.split(",").map((s) => s.trim()).filter(Boolean)
+          : formData.targetYear,
+
+      proposedActivities:
+        typeof formData.proposedActivities === "string"
+          ? formData.proposedActivities.split(",").map((s) => s.trim()).filter(Boolean)
+          : formData.proposedActivities,
+
+      socialLinks:
+        typeof formData.socialLinks === "string"
+          ? formData.socialLinks.split(",").map((s) => s.trim()).filter(Boolean)
+          : formData.socialLinks,
+
+      clubLogo: logoUrl, // ✅ use uploaded logo URL
+    };
+
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `${token}`,
+    };
+
+    if (isEditMode) {
+      await axios.put(
+        `${process.env.REACT_APP_BASE_URL}/club/${id}`,
+        payload,
+        { headers }
+      );
+      setMessage("Club updated successfully!");
+    } else {
+      await axios.post(
+        `${process.env.REACT_APP_BASE_URL}/Club/Create`,
+        payload,
+        { headers }
+      );
+      setMessage("Club created successfully! Pending admin approval.");
+    }
+
+    setTimeout(() => navigate("/new-club-listing"), 900);
+  } catch (err) {
+    console.error("Error saving club:", err.response?.data || err);
+    setMessage("Error saving club");
+  }
+};
+// ✅ Upload file to backend and return the file URL
+const handleFileUpload = async () => {
+  if (!formData.clubLogo) return ""; // No file selected
+
+  try {
+    const token = localStorage.getItem("token");
+    const formDataToSend = new FormData();
+    formDataToSend.append("documentFile", formData.clubLogo); // key = documentFile
+
+    const res = await axios.post(
+      `${process.env.REACT_APP_BASE_URL}/upload/upload`,
+      formDataToSend,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `${token}`,
+        },
+      }
+    );
+
+    // ✅ Correct way (your backend returns the URL in res.data.data)
+    return res.data?.data || "";
+  } catch (err) {
+    console.error("File upload failed:", err);
+    setMessage("Error uploading logo");
+    return "";
+  }
+};
+
+
+
 
   if (loading) return <p>Loading club data...</p>;
 
@@ -148,8 +220,8 @@ const NewClubForm = () => {
           isViewMode
             ? "View Club Proposal"
             : isEditMode
-            ? "Edit Club Proposal"
-            : "Create New Club"
+              ? "Edit Club Proposal"
+              : "Create New Club"
         }
       >
         <form onSubmit={handleSubmit} className="p-4">
@@ -161,9 +233,8 @@ const NewClubForm = () => {
                 name="clubName"
                 value={formData.clubName}
                 onChange={handleChange}
-                className={`border p-2 w-full rounded ${
-                  isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
-                }`}
+                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
                 readOnly={isViewMode}
               />
             </div>
@@ -178,9 +249,8 @@ const NewClubForm = () => {
                 value={formData.clubDescription}
                 onChange={handleChange}
                 rows={1}
-                className={`border p-2 w-full rounded ${
-                  isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
-                }`}
+                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
                 readOnly={isViewMode}
               />
             </div>
@@ -192,9 +262,8 @@ const NewClubForm = () => {
                 name="clubCategory"
                 value={formData.clubCategory}
                 onChange={handleChange}
-                className={`border p-2 w-full rounded ${
-                  isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
-                }`}
+                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
                 disabled={isViewMode}
               >
                 <option value="">Select Category</option>
@@ -298,16 +367,31 @@ const NewClubForm = () => {
                 readOnly={isViewMode}
               />
             </div>
-            <div>
-              <label className="block mb-1 text-sm font-medium">President ID</label>
-              <input
-                name="presidentId"
-                value={formData.presidentId}
-                onChange={handleChange}
-                className="border p-2 w-full rounded"
-                readOnly={isViewMode}
-              />
-            </div>
+           <div>
+  <label className="block mb-1 text-sm font-medium">President</label>
+  <select
+    name="presidentId"
+    value={formData.presidentId}
+    onChange={(e) => {
+      const selectedStudent = students.find((s) => s._id === e.target.value);
+      setFormData((prev) => ({
+        ...prev,
+        presidentId: selectedStudent?._id || "",
+        presidentName: selectedStudent?.name || "",
+      }));
+    }}
+    className="border p-2 w-full rounded"
+    disabled={isViewMode}
+  >
+    <option value="">Select President</option>
+    {students.map((student) => (
+      <option key={student._id} value={student._id}>
+        {student.name} ({student.studentId})
+      </option>
+    ))}
+  </select>
+</div>
+
             <div>
               <label className="block mb-1 text-sm font-medium">Vice President Name</label>
               <input
@@ -318,16 +402,31 @@ const NewClubForm = () => {
                 readOnly={isViewMode}
               />
             </div>
-            <div>
-              <label className="block mb-1 text-sm font-medium">Vice President ID</label>
-              <input
-                name="vicePresidentId"
-                value={formData.vicePresidentId}
-                onChange={handleChange}
-                className="border p-2 w-full rounded"
-                readOnly={isViewMode}
-              />
-            </div>
+           <div>
+  <label className="block mb-1 text-sm font-medium">Vice President</label>
+  <select
+    name="vicePresidentId"
+    value={formData.vicePresidentId}
+    onChange={(e) => {
+      const selectedStudent = students.find((s) => s._id === e.target.value);
+      setFormData((prev) => ({
+        ...prev,
+        vicePresidentId: selectedStudent?._id || "",
+        vicePresidentName: selectedStudent?.name || "",
+      }));
+    }}
+    className="border p-2 w-full rounded"
+    disabled={isViewMode}
+  >
+    <option value="">Select Vice President</option>
+    {students.map((student) => (
+      <option key={student._id} value={student._id}>
+        {student.name} ({student.studentId})
+      </option>
+    ))}
+  </select>
+</div>
+
 
             {/* Justification */}
             <div className="lg:col-span-3">
@@ -366,7 +465,7 @@ const NewClubForm = () => {
               text="Cancel"
               className="btn-light"
               type="button"
-              onClick={() => navigate("/new-clubs")}
+              onClick={() => navigate("/new-club-listing")}
             />
             {!isViewMode && (
               <Button

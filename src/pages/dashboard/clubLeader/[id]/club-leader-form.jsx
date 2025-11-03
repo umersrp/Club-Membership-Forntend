@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import axios from "axios";
-import Select from "@/components/ui/Select"; // ✅ Import React Select
+import Select from "@/components/ui/Select"; // Import React Select
 
 const ClubLeaderForm = () => {
   const { id } = useParams();
@@ -28,7 +28,7 @@ const ClubLeaderForm = () => {
   const [loading, setLoading] = useState(isViewMode || isEditMode);
   const [message, setMessage] = useState("");
 
-  // ✅ Fetch clubs for dropdown
+  // Fetch clubs for dropdown
   useEffect(() => {
     const fetchClubs = async () => {
       try {
@@ -48,16 +48,16 @@ const ClubLeaderForm = () => {
     fetchClubs();
   }, []);
 
-  // ✅ Fetch students for dropdown
+  // Fetch students for dropdown
   useEffect(() => {
     const fetchStudents = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/user/Get-all`, {
+        const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/user/getStudentByAdmin`, {
           headers: { Authorization: `${token}` },
         });
         const formattedStudents = (res.data.data || []).map((student) => ({
-          value: student._id || student.id || student.studentId,
+          value: student.studentId || student.id,
           label: student.studentId || student.name || "Unnamed Student",
         }));
         setStudents(formattedStudents);
@@ -108,14 +108,14 @@ const ClubLeaderForm = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ handleSubmit (with /user/Create-ClubLeader)
+  // handleSubmit (with /user/Create-ClubLeader)
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isViewMode) return;
 
     // Basic validation
     if (!formData.studentId) return setMessage("Student ID is required");
-    if (!formData.club) return setMessage("Club is required");
+    if (!formData.clubId) return setMessage("Club is required");
     if (!formData.role) return setMessage("Role is required");
     if (!formData.effectiveDate) return setMessage("Effective Date is required");
     if (formData.role === "Other" && !formData.customRole.trim())
@@ -144,7 +144,7 @@ const ClubLeaderForm = () => {
         setMessage("Club leader created successfully!");
       }
 
-      setTimeout(() => navigate("/club-leaders"), 900);
+      setTimeout(() => navigate("/club-leader-listing"), 900);
     } catch (err) {
       console.error("Error saving club leader:", err);
       setMessage(err.response?.data?.message || "Error saving club leader");
@@ -162,38 +162,38 @@ const ClubLeaderForm = () => {
       >
         <form onSubmit={handleSubmit} className="p-4">
           <div className="lg:grid-cols-3 grid gap-8 grid-cols-1">
-            {/* ✅ Student ID dropdown */}
+            {/* Student ID dropdown */}
             <div>
               <label className="block text-sm font-medium mb-1">Student</label>
               <Select
-  name="studentId"
-  value={
-    formData.studentId
-      ? { label: formData.studentId, value: formData.studentId }
-      : null
-  }
-  onChange={(selected) => {
-    if (selected) {
-      setFormData((prev) => ({
-        ...prev,
-        studentId: selected.value,
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        studentId: "",
-      }));
-    }
-  }}
-  options={students}
-  allowCustomInput
-  isDisabled={isViewMode}
-  placeholder="Select or create student"
-/>
+                name="studentId"
+                value={
+                  formData.studentId
+                    ? { label: formData.studentId, value: formData.studentId }
+                    : null
+                }
+                onChange={(selected) => {
+                  if (selected) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      studentId: selected.value,
+                    }));
+                  } else {
+                    setFormData((prev) => ({
+                      ...prev,
+                      studentId: "",
+                    }));
+                  }
+                }}
+                options={students}
+                allowCustomInput
+                isDisabled={isViewMode}
+                placeholder="Select or create student"
+              />
 
             </div>
 
-            {/* ✅ Club dropdown */}
+            {/* Club dropdown */}
             <div>
               <label className="block text-sm font-medium mb-1">Club Association</label>
               <Select
@@ -217,9 +217,8 @@ const ClubLeaderForm = () => {
                 name="role"
                 value={formData.role}
                 onChange={handleInputChange}
-                className={`border p-2 w-full rounded ${
-                  isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
-                }`}
+                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
                 disabled={isViewMode}
               >
                 <option value="">Select Role</option>
@@ -239,9 +238,8 @@ const ClubLeaderForm = () => {
                   name="customRole"
                   value={formData.customRole}
                   onChange={handleInputChange}
-                  className={`border p-2 w-full rounded ${
-                    isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
-                  }`}
+                  className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
                   readOnly={isViewMode}
                 />
               </div>
@@ -255,9 +253,8 @@ const ClubLeaderForm = () => {
                 name="effectiveDate"
                 value={formData.effectiveDate}
                 onChange={handleInputChange}
-                className={`border p-2 w-full rounded ${
-                  isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
-                }`}
+                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
                 readOnly={isViewMode}
               />
             </div>
@@ -270,9 +267,8 @@ const ClubLeaderForm = () => {
                 value={formData.notes}
                 onChange={handleInputChange}
                 rows={1}
-                className={`border p-2 w-full rounded ${
-                  isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
-                }`}
+                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
                 readOnly={isViewMode}
               />
             </div>
@@ -284,7 +280,7 @@ const ClubLeaderForm = () => {
               text="Cancel"
               className="btn-light "
               type="button"
-              onClick={() => navigate("/club-leaders")}
+              onClick={() => navigate("/club-leader-listing")}
             />
             {!isViewMode && (
               <Button

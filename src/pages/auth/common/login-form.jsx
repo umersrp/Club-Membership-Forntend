@@ -69,7 +69,7 @@ const LoginForm = () => {
           break;
 
         case UserRole.CLUB_LEADER:
-          navigate("/student-listing"); // club leader page
+          navigate("/event-listing"); // club leader page
           break;
 
         default:

@@ -28,7 +28,9 @@ const EventListing = () => {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [page, setPage] = useState(1);
+  const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [limit] = useState(10);
+  const [loading, setLoading] = useState(true);
 
   const actions = [
     { name: "view", icon: "heroicons-outline:eye" },
@@ -41,30 +43,78 @@ const EventListing = () => {
     if (action === "view") navigate(`/event-form/${row._id}`, { state: { mode: "view" } });
     if (action === "delete") {
       try {
-        const token = localStorage.getItem("token");
-        await axios.delete(`${process.env.REACT_APP_BASE_URL}/events/${row._id}`, {
-          headers: { Authorization: `${token}` },
-        });
+        // Mock delete functionality (since no backend)
         setEvents((prev) => prev.filter((e) => e._id !== row._id));
+        console.log(`Deleted event with id: ${row._id}`);
       } catch (error) {
         console.error("Error deleting event:", error);
       }
     }
   };
 
+  // ✅ Mock event data instead of GET API
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/events`, {
-          headers: { Authorization: `${token}` },
-        });
-        setEvents(res.data.data || []);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-      }
-    };
-    fetchEvents();
+    const mockEvents = [
+      {
+        _id: "1",
+        title: "Tech Innovation Workshop",
+        description:
+          "A hands-on workshop focusing on the latest trends in AI, blockchain, and data science.",
+        category: "Workshop",
+        dateTime: "2025-11-15T10:00",
+        location: "Auditorium Hall A",
+        duration: "3 hours",
+        capacityLimit: 100,
+        registrationDeadline: "2025-11-10",
+        targetGender: "All",
+        targetAudience: "Computer Science and Engineering Students",
+        registrationRequired: "Yes",
+        additionalRequirements: "Bring your own laptop with Python installed.",
+        certificateOffered: "Yes",
+        volunteerHours: 2,
+      },
+      {
+        _id: "2",
+        title: "Cultural Fusion Night",
+        description:
+          "An evening celebrating diverse cultures with music, dance, and food from around the world.",
+        category: "Social",
+        dateTime: "2025-12-01T18:00",
+        location: "University Amphitheatre",
+        duration: "4 hours",
+        capacityLimit: 300,
+        registrationDeadline: "2025-11-28",
+        targetGender: "All",
+        targetAudience: "All Students and Faculty",
+        registrationRequired: "No",
+        additionalRequirements: "-",
+        certificateOffered: "No",
+        volunteerHours: 0,
+      },
+      {
+        _id: "3",
+        title: "Interdepartmental Sports Competition",
+        description:
+          "A competitive sports event between different university departments — cricket, football, and basketball.",
+        category: "Competition",
+        dateTime: "2025-11-25T09:00",
+        location: "Sports Ground",
+        duration: "6 hours",
+        capacityLimit: 150,
+        registrationDeadline: "2025-11-20",
+        targetGender: "All",
+        targetAudience: "Sports Enthusiasts and Department Teams",
+        registrationRequired: "Yes",
+        additionalRequirements: "Teams must wear departmental jerseys.",
+        certificateOffered: "Yes",
+        volunteerHours: 3,
+      },
+    ];
+
+    setTimeout(() => {
+      setEvents(mockEvents);
+      setLoading(false);
+    }, 800);
   }, []);
 
   const COLUMNS = useMemo(
@@ -149,20 +199,29 @@ const EventListing = () => {
 
   const { globalFilter } = state;
 
+  if (loading) return <p className="text-center mt-8 text-gray-500">Loading events...</p>;
+
   return (
     <div>
-      <div className="flex justify-end mb-4">
-        <Button
-          text="+ Add Event"
-          className="btn-primary"
-          onClick={() => navigate("/event-form/add")}
-        />
-      </div>
       <Card noborder>
-        <div className="md:flex justify-between items-center mb-6">
-          <h4 className="card-title">Events</h4>
-          <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
-        </div>
+          <div className="md:flex pb-6 items-center">
+                  <h6 className="flex-1 md:mb-0">Events</h6>
+                  <div className="md:flex md:space-x-3 items-center flex-none rtl:space-x-reverse">
+                    <GlobalFilter
+                      filter={globalFilterValue}
+                      setFilter={setGlobalFilterValue}
+                    />
+                    <Button
+                      icon="heroicons-outline:plus-sm"
+                      text="Add Student"
+                      className="btn font-normal btn-sm bg-gradient-to-r from-[#3AB89D] to-[#3A90B8] text-white border-0 hover:opacity-90"
+                      iconClass="text-lg"
+                      onClick={() =>
+                        navigate("/event-form/Add", { state: { mode: "add" } })
+                      }
+                    />
+                  </div>
+            </div>
 
         <div className="overflow-x-auto -mx-6">
           <div className="inline-block min-w-full align-middle">
@@ -173,7 +232,7 @@ const EventListing = () => {
               >
                 <thead className="border-t border-slate-100 dark:border-slate-800">
                   {headerGroups.map((headerGroup) => (
-                    <tr {...headerGroup.getHeaderGroupProps()}>
+                    <tr {...headerGroup.getHeaderGroupProps()} className="bg-gradient-to-r from-[#3AB89D] to-[#3A90B8]">
                       {headerGroup.headers.map((column) => (
                         <th
                           {...column.getHeaderProps(column.getSortByToggleProps())}

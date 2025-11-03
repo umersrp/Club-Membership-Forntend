@@ -19,88 +19,57 @@ import Modal from "@/components/ui/Modal";
 const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
   const defaultRef = React.useRef();
   const resolvedRef = ref || defaultRef;
+
   React.useEffect(() => {
     resolvedRef.current.indeterminate = indeterminate;
   }, [resolvedRef, indeterminate]);
+
   return <input type="checkbox" ref={resolvedRef} {...rest} className="table-checkbox" />;
 });
 
-const ClubLeaderListing = () => {
+const ClubRequestListing = () => {
   const navigate = useNavigate();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageCount, setPageCount] = useState(0);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedLeaderId, setSelectedLeaderId] = useState(null);
+  const [selectedRequestId, setSelectedRequestId] = useState(null);
 
-  // ✅ Define Table Columns
+  //  Table Columns
   const COLUMNS = [
     {
-      Header: "Sr No",
+      Header: "Sr no",
+      accessor: "id",
       Cell: ({ row }) => <span>{row.index + 1}</span>,
     },
-    { Header: "Student ID", accessor: "studentId" },
+    { Header: "Student Name", accessor: "userName" },
+    { Header: "Club Name", accessor: "clubName" },
+    { Header: "Motivation", accessor: "motivation" },
+    { Header: "Skills", accessor: "skills" },
+    { Header: "Experience", accessor: "previousExperience" },
+    { Header: "Availability", accessor: "availability" },
+    { Header: "Contribution", accessor: "contribution" },
     {
-      Header: "Club ID",
-      accessor: (row) => row.clubLeadership?.clubId?.clubName || "-",
-    },
-    {
-      Header: "Role",
-      accessor: (row) => row.clubLeadership?.role || "-",
-    },
-    {
-      Header: "Custom Role",
-      accessor: (row) => row.clubLeadership?.customRoleName || "-",
-    },
-    {
-      Header: "Effective Date",
-      accessor: (row) =>
-        row.clubLeadership?.effectiveDate
-          ? new Date(row.clubLeadership.effectiveDate).toLocaleDateString()
-          : "-",
-    },
-    {
-      Header: "Notes",
-      accessor: (row) => row.clubLeadership?.notes || "-",
+      Header: "Custom Questions",
+      accessor: "customQuestions",
+      Cell: ({ cell }) => cell.value || "-",
     },
     {
       Header: "Actions",
       accessor: "_id",
       Cell: ({ cell }) => (
         <div className="flex space-x-3 rtl:space-x-reverse">
-          <Tippy content="View">
-            <button
-              className="action-btn"
-              onClick={() =>
-                navigate(`/club-leader-form/${cell.value}`, {
-                  state: { mode: "view" },
-                })
-              }
-            >
-              <Icon className="text-green-600" icon="heroicons:eye" />
-            </button>
-          </Tippy>
-          <Tippy content="Edit">
-            <button
-              className="action-btn"
-              onClick={() =>
-                navigate(`/club-leader-form/${cell.value}`, {
-                  state: { mode: "edit" },
-                })
-              }
-            >
-              <Icon className="text-blue-600" icon="heroicons:pencil-square" />
-            </button>
-          </Tippy>
-          <Tippy content="Delete">
-            <button
-              className="action-btn"
-              onClick={() => confirmDelete(cell.value)}
-            >
-              <Icon className="text-red-700" icon="heroicons:trash" />
-            </button>
-          </Tippy>
+          <Button
+            text="Accept"
+            className="btn-sm bg-green-500 text-white"
+            onClick={() => handleAccept(cell.value)}
+          />
+          <Button
+            text="Reject"
+            className="btn-sm bg-red-500 text-white"
+            onClick={() => handleReject(cell.value)}
+          />
         </div>
       ),
     },
@@ -109,7 +78,6 @@ const ClubLeaderListing = () => {
   const columns = useMemo(() => COLUMNS, []);
   const data = useMemo(() => records, [records]);
 
-  // ✅ React Table Setup
   const tableInstance = useTable(
     {
       columns,
@@ -154,82 +122,95 @@ const ClubLeaderListing = () => {
 
   const { pageIndex, pageSize } = state;
 
-  // ✅ Fetch Club Leaders Data
-  const fetchClubLeaders = async (search = "") => {
+  //  Fetch Requests
+  const fetchJoinRequests = async (search = "") => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
       const res = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}/user/get-all-clubLeader`,
+        `${process.env.REACT_APP_BASE_URL}/Joining-requests/all`,
         {
-          headers: { Authorization: `${token}` },
+          headers: { Authorization: `${localStorage.getItem("token")}` },
           params: { page: pageIndex + 1, limit: pageSize, search },
         }
       );
 
-      const data = res.data?.data || [];
+      const data = res.data?.data?.records || res.data?.data || [];
+      const pagination = res.data?.data?.pagination || {};
+
       setRecords(data);
-      setPageCount(1); // Static since backend doesn't provide pagination
+      setPageCount(pagination.totalPages || 1);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to fetch club leaders");
+      toast.error("Failed to fetch requests");
     } finally {
       setLoading(false);
     }
   };
 
+  //  UseEffect for Fetching
   useEffect(() => {
     const delay = setTimeout(() => {
-      fetchClubLeaders(globalFilterValue);
+      fetchJoinRequests(globalFilterValue);
     }, 400);
     return () => clearTimeout(delay);
   }, [globalFilterValue, pageIndex, pageSize]);
 
-  // ✅ Delete Leader
-  const handleDelete = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.delete(
-        `${process.env.REACT_APP_BASE_URL}/user/admin-remove/${id}`,
-        { headers: { Authorization: `${token}` } }
-      );
-      toast.success("Club Leader deleted successfully");
-      fetchClubLeaders();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to delete leader");
-    }
-  };
+// Accept Request
+const handleAccept = async (id) => {
+  try {
+    await axios.put(
+      `${process.env.REACT_APP_BASE_URL}/Joining-requests/${id}`,
+      { status: "approved" }, // backend expects this
+      {
+        headers: {
+          Authorization: `${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    toast.success("Request approved successfully");
+    fetchJoinRequests(); // refresh list after update
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to approve request");
+  }
+};
 
-  const confirmDelete = (id) => {
-    setSelectedLeaderId(id);
-    setDeleteModalOpen(true);
-  };
+// Reject Request
+const handleReject = async (id) => {
+  try {
+    await axios.put(
+      `${process.env.REACT_APP_BASE_URL}/Joining-requests/${id}`,
+      { status: "rejected" }, // backend expects this
+      {
+        headers: {
+          Authorization: `${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    toast.success("Request rejected successfully");
+    fetchJoinRequests();
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to reject request");
+  }
+};
 
-  // ✅ UI
+
+  //  UI Render
   return (
     <>
       <Card noborder>
         <div className="md:flex pb-6 items-center">
-          <h6 className="flex-1 md:mb-0">Club Leaders</h6>
+          <h6 className="flex-1 md:mb-0">Club Joining Requests</h6>
           <div className="md:flex md:space-x-3 items-center flex-none rtl:space-x-reverse">
             <GlobalFilter
               filter={globalFilterValue}
               setFilter={setGlobalFilterValue}
             />
-            <Button
-              icon="heroicons-outline:plus-sm"
-              text="Add Club Leader"
-              className="btn font-normal btn-sm bg-gradient-to-r from-[#3AB89D] to-[#3A90B8] text-white border-0 hover:opacity-90"
-              iconClass="text-lg"
-              onClick={() =>
-                navigate("/club-leader-form/add", { state: { mode: "add" } })
-              }
-            />
           </div>
         </div>
 
-        {/* ✅ Table */}
+        {/* Table */}
         <div className="overflow-x-auto -mx-6">
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden">
@@ -247,9 +228,7 @@ const ClubLeaderListing = () => {
                       <tr {...headerGroup.getHeaderGroupProps()} key={index}>
                         {headerGroup.headers.map((column) => (
                           <th
-                            {...column.getHeaderProps(
-                              column.getSortByToggleProps()
-                            )}
+                            {...column.getHeaderProps(column.getSortByToggleProps())}
                             className="table-th text-white"
                             key={column.id}
                           >
@@ -273,7 +252,7 @@ const ClubLeaderListing = () => {
                           colSpan={columns.length + 1}
                           className="text-center py-4"
                         >
-                          No data available.
+                          No requests available.
                         </td>
                       </tr>
                     ) : (
@@ -299,39 +278,88 @@ const ClubLeaderListing = () => {
             </div>
           </div>
         </div>
-      </Card>
 
-      {/* ✅ Delete Confirmation Modal */}
-      <Modal
-        activeModal={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        title="Confirm Delete"
-        themeClass="bg-gradient-to-r from-[#3AB89D] to-[#3A90B8]"
-        centered
-        footerContent={
-          <>
-            <Button
-              text="Cancel"
-              className="btn-light"
-              onClick={() => setDeleteModalOpen(false)}
-            />
-            <Button
-              text="Delete"
-              className="btn-danger"
-              onClick={async () => {
-                await handleDelete(selectedLeaderId);
-                setDeleteModalOpen(false);
-              }}
-            />
-          </>
-        }
-      >
-        <p className="text-gray-700 text-center">
-          Are you sure you want to delete this club leader? This action cannot be undone.
-        </p>
-      </Modal>
+        {/* Pagination */}
+        <div className="md:flex md:space-y-0 space-y-5 justify-between mt-6 items-center">
+          <div className="flex items-center space-x-3 rtl:space-x-reverse">
+            <span className="text-sm font-medium text-slate-600">
+              Page <span>{pageIndex + 1} of {pageCount}</span>
+            </span>
+          </div>
+
+          <ul className="flex items-center space-x-3 rtl:space-x-reverse">
+            <li>
+              <button
+                onClick={() => gotoPage(0)}
+                disabled={!canPreviousPage}
+                className={`${!canPreviousPage ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <Icon icon="heroicons:chevron-double-left-solid" />
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => previousPage()}
+                disabled={!canPreviousPage}
+                className={`${!canPreviousPage ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                Prev
+              </button>
+            </li>
+
+            {pageOptions.map((pageNum, idx) => (
+              <li key={idx}>
+                <button
+                  className={`${
+                    idx === pageIndex
+                      ? "bg-slate-900 text-white font-medium"
+                      : "bg-slate-100 text-slate-900 font-normal"
+                  } text-sm rounded h-6 w-6 flex items-center justify-center`}
+                  onClick={() => gotoPage(idx)}
+                >
+                  {pageNum + 1}
+                </button>
+              </li>
+            ))}
+
+            <li>
+              <button
+                onClick={() => nextPage()}
+                disabled={!canNextPage}
+                className={`${!canNextPage ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                Next
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => gotoPage(pageCount - 1)}
+                disabled={!canNextPage}
+                className={`${!canNextPage ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <Icon icon="heroicons:chevron-double-right-solid" />
+              </button>
+            </li>
+          </ul>
+
+          <div className="flex items-center space-x-3">
+            <span className="text-sm font-medium text-slate-600">Show</span>
+            <select
+              value={pageSize}
+              onChange={(e) => tableInstance.setPageSize(Number(e.target.value))}
+              className="form-select py-2"
+            >
+              {[10, 20, 30, 50].map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </Card>
     </>
   );
 };
 
-export default ClubLeaderListing;
+export default ClubRequestListing;

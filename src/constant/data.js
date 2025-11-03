@@ -9,6 +9,17 @@ export const clubLeaderMenu = [
     icon: "heroicons:academic-cap",
     link: "student-listing",
   },
+    {
+    title: "Events",
+    icon: "heroicons:calendar-days",
+    link: "event-listing",
+  },
+  
+  {
+    title: "ClubRequest",
+    icon: "heroicons:calendar-days",
+    link: "club-request-listing",
+  },
 ];
 
 export const studentMenu = [
@@ -16,6 +27,11 @@ export const studentMenu = [
     title: "Club Listing",
     icon: "heroicons:identification",
     link: "club-listing",
+  },
+  {
+    title: "Event Listing",
+    icon: "heroicons:identification",
+    link: "event-registration-listing",
   },
 ];
 
@@ -31,30 +47,27 @@ export const menuItems = [
   //   link: "student-listing",
   // },
   {
-    title: "Club Leader",
-    icon: "heroicons:user-group",
-    link: "club-leader-listing",
-  },
-  {
     title: "New Club ",
     icon: "heroicons:square-2-stack",
     link: "new-club-listing",
   },
+  
    {
-    title: "Events",
-    icon: "heroicons:calendar-days",
-    link: "event-listing",
+    title: "Club Leader",
+    icon: "heroicons:user-group",
+    link: "club-leader-listing",
   },
-  {
-    title: "Club Application",
-    icon: "heroicons:document-arrow-down",
-    link: "club-application-listing",
+    {
+    title: "Student",
+    icon: "heroicons:academic-cap",
+    link: "student-listing",
   },
-  {
-    title: "Event Registration", 
-    icon: "heroicons:identification",
-    link: "event-registration-listing",
-  },
+  // {
+  //   title: "Club Application",
+  //   icon: "heroicons:document-arrow-down",
+  //   link: "club-application-listing",
+  // },
+  
   //  {
   //   title: "Club Listing", 
   //   icon: "heroicons:identification",

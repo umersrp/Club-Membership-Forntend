@@ -1,13 +1,20 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
-import Dropdown from "@/components/ui/Dropdown";
 import Icon from "@/components/ui/Icon";
-import { Menu } from "@headlessui/react";
-import { useTable, useRowSelect, useSortBy, useGlobalFilter, usePagination } from "react-table";
-import GlobalFilter from "../../table/react-tables/GlobalFilter";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import Tippy from "@tippyjs/react";
+import {
+  useTable,
+  useRowSelect,
+  useSortBy,
+  usePagination,
+} from "react-table";
+import GlobalFilter from "@/pages/table/react-tables/GlobalFilter";
+import Logo from "@/assets/images/logo/SrpLogo.png";
+import Modal from "@/components/ui/Modal";
 
 const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
   const defaultRef = React.useRef();
@@ -21,146 +28,338 @@ const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref)
 const StudentListing = () => {
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
-  const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [loading, setLoading] = useState(false);
+  const [globalFilterValue, setGlobalFilterValue] = useState("");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedStudentId, setSelectedStudentId] = useState(null);
 
-  const actions = [
-    { name: "view", icon: "heroicons-outline:eye" },
-    { name: "edit", icon: "heroicons:pencil-square" },
-    { name: "delete", icon: "heroicons-outline:trash" },
-  ];
-
-  const handleAction = async (action, row) => {
-    if (action === "edit") navigate(`/student-form/${row._id}`, { state: { mode: "edit" } });
-    if (action === "view") navigate(`/student-form/${row._id}`, { state: { mode: "view" } });
-    if (action === "delete") {
-      try {
-        const token = localStorage.getItem("token");
-        await axios.delete(`${process.env.REACT_APP_BASE_URL}/students/${row._id}`, {
+  // ✅ Fetch Students
+  const fetchStudents = async (search = "") => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/user/getStudentByAdmin`,
+        {
           headers: { Authorization: `${token}` },
-        });
-        setStudents((prev) => prev.filter((s) => s._id !== row._id));
-      } catch (error) {
-        console.error("Error deleting student:", error);
-      }
+          params: { search },
+        }
+      );
+      const data = res.data?.data || [];
+      setStudents(data);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch students");
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/students`, {
-          headers: { Authorization: `${token}` },
-        });
-        setStudents(res.data.data || []);
-      } catch (error) {
-        console.error("Error fetching students:", error);
-      }
-    };
-    fetchStudents();
-  }, []);
+    const delay = setTimeout(() => {
+      fetchStudents(globalFilterValue);
+    }, 400);
+    return () => clearTimeout(delay);
+  }, [globalFilterValue]);
 
-  const COLUMNS = useMemo(
-    () => [
-      { Header: "S.No", id: "serialNo", Cell: (row) => row.row.index + 1 + (page - 1) * limit },
-      { Header: "Full Name", accessor: "fullName" },
-      { Header: "Email", accessor: "universityEmail" },
-      { Header: "Student ID", accessor: "studentId" },
-      { Header: "Major", accessor: "major" },
-      { Header: "Year", accessor: "year" },
-      { Header: "Interests", accessor: (row) => row.interests.join(", ") },
-      { Header: "Gender", accessor: "gender" },
-      { Header: "Contact", accessor: "contactNumber" },
-      {
-        Header: "Action",
-        accessor: "action",
-        Cell: ({ row }) => (
-          <Dropdown label={<Icon icon="heroicons-outline:dots-vertical" />}>
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              {actions.map((item, i) => (
-                <Menu.Item key={i}>
-                  <div
-                    onClick={() => handleAction(item.name, row.original)}
-                    className={`w-full px-4 py-2 text-sm cursor-pointer flex items-center gap-2 ${
-                      item.name === "delete"
-                        ? "bg-danger-500 text-danger-500 bg-opacity-30 hover:bg-opacity-100 hover:text-white"
-                        : "hover:bg-slate-900 hover:text-white dark:hover:bg-slate-600 dark:hover:bg-opacity-50"
-                    }`}
-                  >
-                    <Icon icon={item.icon} />
-                    <span>{item.name}</span>
-                  </div>
-                </Menu.Item>
-              ))}
-            </div>
-          </Dropdown>
-        ),
+  // ✅ Toggle Active/Inactive Status
+  const toggleStatus = async (id, currentStatus) => {
+    try {
+      const token = localStorage.getItem("token");
+      const newStatus = !currentStatus;
+
+      await axios.put(
+        `${process.env.REACT_APP_BASE_URL}/user/update-student-status/${id}`,
+        { isActive: newStatus },
+        { headers: { Authorization: `${token}` } }
+      );
+
+      // Update UI instantly
+      setStudents((prev) =>
+        prev.map((s) => (s._id === id ? { ...s, isActive: newStatus } : s))
+      );
+
+      toast.success(`Student is now ${newStatus ? "Active" : "Inactive"}`);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update status");
+    }
+  };
+
+  // ✅ Delete Student
+  const handleDelete = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(
+        `${process.env.REACT_APP_BASE_URL}/user/admin-remove/${id}`,
+        { headers: { Authorization: `${token}` } }
+      );
+      toast.success("Student deleted successfully");
+      fetchStudents();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete student");
+    }
+  };
+
+  const confirmDelete = (id) => {
+    setSelectedStudentId(id);
+    setDeleteModalOpen(true);
+  };
+
+  // ✅ Define Table Columns
+  const COLUMNS = [
+    {
+      Header: "Sr No",
+      Cell: ({ row }) => <span>{row.index + 1}</span>,
+    },
+    { Header: "Student ID", accessor: "studentId" },
+    { Header: "Name", accessor: "name" },
+    { Header: "Username", accessor: "username" },
+    { Header: "Email", accessor: "email" },
+    { Header: "Major", accessor: "major" },
+    { Header: "Year of Study", accessor: "yearOfStudy" },
+    {
+      Header: "Gender",
+      accessor: "gender",
+      Cell: ({ value }) => (
+        <span
+          className={`px-2 py-1 rounded text-sm font-medium ${
+            value === "Male"
+              ? "bg-blue-100 text-blue-700"
+              : "bg-pink-100 text-pink-700"
+          }`}
+        >
+          {value}
+        </span>
+      ),
+    },
+    {
+      Header: "Status",
+      accessor: "isActive",
+      Cell: ({ row }) => {
+        const { _id, isActive } = row.original;
+        return (
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isActive}
+              onChange={() => toggleStatus(_id, isActive)}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-green-500 transition-all after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+            <span className="ml-2 text-sm font-medium text-gray-700">
+              {isActive ? "Active" : "Inactive"}
+            </span>
+          </label>
+        );
       },
-    ],
-    [page, limit]
-  );
+    },
+    {
+      Header: "Phone",
+      accessor: "phone",
+    },
+    {
+      Header: "Interests",
+      accessor: "interests",
+      Cell: ({ value }) => (value && value.length > 0 ? value.join(", ") : "-"),
+    },
+    {
+      Header: "Actions",
+      accessor: "_id",
+      Cell: ({ cell }) => (
+        <div className="flex space-x-3 rtl:space-x-reverse">
+          <Tippy content="View">
+            <button
+              className="action-btn"
+              onClick={() =>
+                navigate(`/student-view/${cell.value}`, {
+                  state: { mode: "view" },
+                })
+              }
+            >
+              <Icon className="text-green-600" icon="heroicons:eye" />
+            </button>
+          </Tippy>
+          <Tippy content="Edit">
+            <button
+              className="action-btn"
+              onClick={() =>
+                navigate(`/student-edit/${cell.value}`, {
+                  state: { mode: "edit" },
+                })
+              }
+            >
+              <Icon className="text-blue-600" icon="heroicons:pencil-square" />
+            </button>
+          </Tippy>
+          <Tippy content="Delete">
+            <button
+              className="action-btn"
+              onClick={() => confirmDelete(cell.value)}
+            >
+              <Icon className="text-red-700" icon="heroicons:trash" />
+            </button>
+          </Tippy>
+        </div>
+      ),
+    },
+  ];
 
+  const columns = useMemo(() => COLUMNS, [students]);
+  const data = useMemo(() => students, [students]);
+
+  // ✅ React Table Setup
   const tableInstance = useTable(
-    { columns: COLUMNS, data: students },
-    useGlobalFilter,
+    {
+      columns,
+      data,
+      manualPagination: false,
+      initialState: { pageIndex: 0, pageSize: 10 },
+    },
     useSortBy,
     usePagination,
     useRowSelect,
     (hooks) => {
       hooks.visibleColumns.push((columns) => [
-        { id: "selection", Header: ({ getToggleAllRowsSelectedProps }) => <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />, Cell: ({ row }) => <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} /> },
+        {
+          id: "selection",
+          Header: ({ getToggleAllRowsSelectedProps }) => (
+            <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
+          ),
+          Cell: ({ row }) => (
+            <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+          ),
+        },
         ...columns,
       ]);
     }
   );
 
-  const { getTableProps, getTableBodyProps, headerGroups, page: tablePage, prepareRow, state, setGlobalFilter } = tableInstance;
-  const { globalFilter } = state;
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    page,
+    prepareRow,
+  } = tableInstance;
 
+  // ✅ UI
   return (
-    <div>
-      <div className="flex justify-end mb-4">
-        <Button text="+ Add Student" className="btn-primary" onClick={() => navigate("/student-form/add")} />
-      </div>
+    <>
       <Card noborder>
-        <div className="md:flex justify-between items-center mb-6">
-          <h4 className="card-title">Students</h4>
-          <GlobalFilter filter={globalFilter} setFilter={setGlobalFilter} />
+        <div className="md:flex pb-6 items-center">
+          <h6 className="flex-1 md:mb-0">Students</h6>
+          <div className="md:flex md:space-x-3 items-center flex-none rtl:space-x-reverse">
+            <GlobalFilter
+              filter={globalFilterValue}
+              setFilter={setGlobalFilterValue}
+            />
+          </div>
         </div>
+
+        {/* ✅ Table */}
         <div className="overflow-x-auto -mx-6">
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden">
-              <table {...getTableProps()} className="min-w-full divide-y divide-slate-100 table-fixed dark:divide-slate-700">
-                <thead className="border-t border-slate-100 dark:border-slate-800">
-                  {headerGroups.map((headerGroup) => (
-                    <tr {...headerGroup.getHeaderGroupProps()}>
-                      {headerGroup.headers.map((column) => (
-                        <th {...column.getHeaderProps(column.getSortByToggleProps())} className="table-th">
-                          {column.render("Header")}
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody {...getTableBodyProps()} className="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700">
-                  {tablePage.map((row) => {
-                    prepareRow(row);
-                    return (
-                      <tr {...row.getRowProps()}>
-                        {row.cells.map((cell) => (
-                          <td {...cell.getCellProps()} className="table-td">{cell.render("Cell")}</td>
+              {loading ? (
+                <div className="flex justify-center items-center py-8">
+                  <img src={Logo} alt="Loading..." className="w-52 h-24" />
+                </div>
+              ) : (
+                <table
+                  className="min-w-full divide-y divide-slate-100 table-fixed"
+                  {...getTableProps()}
+                >
+                  <thead className="bg-gradient-to-r from-[#3AB89D] to-[#3A90B8]">
+                    {headerGroups.map((headerGroup, index) => (
+                      <tr {...headerGroup.getHeaderGroupProps()} key={index}>
+                        {headerGroup.headers.map((column) => (
+                          <th
+                            {...column.getHeaderProps(
+                              column.getSortByToggleProps()
+                            )}
+                            className="table-th text-white"
+                            key={column.id}
+                          >
+                            {column.render("Header")}
+                            <span>
+                              {column.isSorted
+                                ? column.isSortedDesc
+                                  ? " 🔽"
+                                  : " 🔼"
+                                : ""}
+                            </span>
+                          </th>
                         ))}
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                    ))}
+                  </thead>
+                  <tbody {...getTableBodyProps()}>
+                    {page.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={columns.length + 1}
+                          className="text-center py-4"
+                        >
+                          No student data available.
+                        </td>
+                      </tr>
+                    ) : (
+                      page.map((row) => {
+                        prepareRow(row);
+                        return (
+                          <tr {...row.getRowProps()} className="even:bg-gray-50">
+                            {row.cells.map((cell) => (
+                              <td
+                                {...cell.getCellProps()}
+                                className="px-6 py-4 whitespace-nowrap"
+                              >
+                                {cell.render("Cell")}
+                              </td>
+                            ))}
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </div>
       </Card>
-    </div>
+
+      {/* ✅ Delete Confirmation Modal */}
+      <Modal
+        activeModal={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        title="Confirm Delete"
+        themeClass="bg-gradient-to-r from-[#3AB89D] to-[#3A90B8]"
+        centered
+        footerContent={
+          <>
+            <Button
+              text="Cancel"
+              className="btn-light"
+              onClick={() => setDeleteModalOpen(false)}
+            />
+            <Button
+              text="Delete"
+              className="btn-danger"
+              onClick={async () => {
+                await handleDelete(selectedStudentId);
+                setDeleteModalOpen(false);
+              }}
+            />
+          </>
+        }
+      >
+        <p className="text-gray-700 text-center">
+          Are you sure you want to delete this student? This action cannot be undone.
+        </p>
+      </Modal>
+    </>
   );
 };
 

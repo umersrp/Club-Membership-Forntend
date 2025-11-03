@@ -358,7 +358,7 @@ const EventForm = () => {
               text="Cancel"
               className="btn-light"
               type="button"
-              onClick={() => navigate("/events")}
+              onClick={() => navigate("/event-listing")}
             />
             {!isViewMode && (
               <Button
