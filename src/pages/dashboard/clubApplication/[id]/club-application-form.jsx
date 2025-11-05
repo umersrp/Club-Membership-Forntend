@@ -68,7 +68,7 @@ const handleSubmit = async (e) => {
 
   try {
     const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId"); // ✅ assuming you save logged-in userId at login
+    const userId = localStorage.getItem("userId"); //  assuming you save logged-in userId at login
 
     if (isEditMode) {
       await axios.put(
@@ -80,15 +80,15 @@ const handleSubmit = async (e) => {
       );
       setMessage("Application updated successfully!");
     } else {
-      // ✅ Include clubLeaderId and clubId when submitting
+      //  Include clubLeaderId and clubId when submitting
       await axios.post(
         `${process.env.REACT_APP_BASE_URL}/Joining-requests/create`,
         {
           ...formData,
           clubId: club?._id,             // Club ID
           clubName: club?.clubName,      // Club Name
-         clubLeaderId: club?.createdBy?._id || club?.createdBy, // ✅ Club Leader ID from /club/get-all-club
-          userId: userId,                // ✅ Logged-in user’s ID
+         clubLeaderId: club?.createdBy?._id || club?.createdBy, //  Club Leader ID from /club/get-all-club
+          userId: userId,                //  Logged-in user’s ID
         },
         {
           headers: { "Content-Type": "application/json", Authorization: `${token}` },
@@ -126,7 +126,7 @@ const handleSubmit = async (e) => {
 //       );
 //       setMessage("Application updated successfully!");
 //     } else {
-//       // ✅ Create new joining request
+//       //  Create new joining request
 //       const payload = {
 //         ...formData,
 //         clubId: club?._id,

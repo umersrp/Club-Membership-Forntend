@@ -120,13 +120,13 @@ const handleSubmit = async (e) => {
   try {
     const token = localStorage.getItem("token");
 
-    // ✅ Upload logo first (if provided)
+    //  Upload logo first (if provided)
     let logoUrl = "";
     if (formData.clubLogo) {
       logoUrl = await handleFileUpload(); // keep this as your existing logic
     }
 
-    // ✅ Convert string fields to arrays if needed
+    //  Convert string fields to arrays if needed
     const payload = {
       ...formData,
       targetMajor:
@@ -149,7 +149,7 @@ const handleSubmit = async (e) => {
           ? formData.socialLinks.split(",").map((s) => s.trim()).filter(Boolean)
           : formData.socialLinks,
 
-      clubLogo: logoUrl, // ✅ use uploaded logo URL
+      clubLogo: logoUrl, //  use uploaded logo URL
     };
 
     const headers = {
@@ -179,7 +179,7 @@ const handleSubmit = async (e) => {
     setMessage("Error saving club");
   }
 };
-// ✅ Upload file to backend and return the file URL
+//  Upload file to backend and return the file URL
 const handleFileUpload = async () => {
   if (!formData.clubLogo) return ""; // No file selected
 
@@ -199,7 +199,7 @@ const handleFileUpload = async () => {
       }
     );
 
-    // ✅ Correct way (your backend returns the URL in res.data.data)
+    //  Correct way (your backend returns the URL in res.data.data)
     return res.data?.data || "";
   } catch (err) {
     console.error("File upload failed:", err);

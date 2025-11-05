@@ -36,7 +36,7 @@ const NewClubListing = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedBuildingId, setSelectedBuildingId] = useState(null);
 
-  // ✅ Table Columns
+  //  Table Columns
   const COLUMNS = [
     {
       Header: "Sr no",
@@ -151,8 +151,8 @@ const NewClubListing = () => {
       accessor: "_id",
       Cell: ({ cell }) => (
         <div className="flex space-x-3">
-          {/* 👁 View */}
-          <Tippy >
+          {/* View */}
+          <Tippy content="view" theme="light" >
             <button
               onClick={() =>
                 navigate(`/new-club-form/${cell.value}`, {
@@ -164,8 +164,8 @@ const NewClubListing = () => {
             </button>
           </Tippy>
 
-          {/* ✏ Edit */}
-          <Tippy >
+          {/*  Edit */}
+          <Tippy content="edit" theme="light">
             <button
               onClick={() =>
                 navigate(`/new-club-form/${cell.value}`, {
@@ -177,8 +177,8 @@ const NewClubListing = () => {
             </button>
           </Tippy>
 
-          {/* 🗑 Delete */}
-          <Tippy >
+          {/*  Delete */}
+          <Tippy content="delete" theme="light" >
             <button onClick={() => confirmDelete(cell.value)}>
               <Icon className="text-red-700" icon="heroicons:trash" />
             </button>
@@ -192,7 +192,7 @@ const NewClubListing = () => {
   const columns = useMemo(() => COLUMNS, []);
   const data = useMemo(() => records, [records]);
 
-  // ✅ React Table Instance
+  //  React Table Instance
   const tableInstance = useTable(
     {
       columns,
@@ -237,7 +237,7 @@ const NewClubListing = () => {
 
   const { pageIndex, pageSize } = state;
 
-  // ✅ Fetch Data
+  //  Fetch Data
   const fetchStationaryRecords = async (search = "") => {
     setLoading(true);
     try {
@@ -259,7 +259,7 @@ const NewClubListing = () => {
     }
   };
 
-  // ✅ UseEffect for Fetching
+  //  UseEffect for Fetching
   useEffect(() => {
     const delay = setTimeout(() => {
       fetchStationaryRecords(globalFilterValue);
@@ -267,7 +267,7 @@ const NewClubListing = () => {
     return () => clearTimeout(delay);
   }, [globalFilterValue, pageIndex, pageSize]);
 
-  // ✅ Delete Function
+  //  Delete Function
   const handleDelete = async (id) => {
     try {
       await axios.delete(`${process.env.REACT_APP_BASE_URL}/club/delete/${id}`, {
@@ -286,7 +286,7 @@ const NewClubListing = () => {
     setDeleteModalOpen(true);
   };
 
-  // ✅ UI Render
+  //  UI Render
   return (
     <>
       <Card noborder>
@@ -370,7 +370,7 @@ const NewClubListing = () => {
           </div>
         </div>
 
-        {/* ✅ Pagination (CompanyTable Style) */}
+        {/*  Pagination (CompanyTable Style) */}
         <div className="md:flex md:space-y-0 space-y-5 justify-between mt-6 items-center">
           <div className="flex items-center space-x-3 rtl:space-x-reverse">
             <span className="text-sm font-medium text-slate-600">
@@ -449,7 +449,7 @@ const NewClubListing = () => {
         </div>
       </Card>
 
-      {/* ✅ Delete Modal */}
+      {/*  Delete Modal */}
       <Modal
         activeModal={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}

@@ -379,7 +379,7 @@ import {
 import GlobalFilter from "@/pages/table/react-tables/GlobalFilter";
 import Logo from "@/assets/images/logo/SrpLogo.png";
 
-// ✅ Checkbox Component
+//  Checkbox Component
 const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
   const defaultRef = React.useRef();
   const resolvedRef = ref || defaultRef;
@@ -398,7 +398,7 @@ const ClubRequestListing = () => {
   const [pageCount, setPageCount] = useState(0);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
 
-  // ✅ Columns to show only student + club details
+  //  Columns to show only student + club details
   const COLUMNS = [
     {
       Header: "Sr No",
@@ -500,7 +500,7 @@ const ClubRequestListing = () => {
 
   const { pageIndex, pageSize } = state;
 
-  // ✅ Fetch Requests
+  //  Fetch Requests
   const fetchJoinRequests = async (search = "") => {
     setLoading(true);
     try {
@@ -514,7 +514,7 @@ const ClubRequestListing = () => {
 
       const rawData = res.data?.data || [];
 
-      // ✅ Map only required fields (student + club)
+      //  Map only required fields (student + club)
       const mapped = rawData.map((item) => ({
         _id: item._id,
         studentName: item.userId?.name || "—",
@@ -535,7 +535,7 @@ const ClubRequestListing = () => {
     }
   };
 
-  // ✅ UseEffect for Fetching
+  //  UseEffect for Fetching
   useEffect(() => {
     const delay = setTimeout(() => {
       fetchJoinRequests(globalFilterValue);
@@ -543,7 +543,7 @@ const ClubRequestListing = () => {
     return () => clearTimeout(delay);
   }, [globalFilterValue, pageIndex, pageSize]);
 
-  // ✅ Accept Request
+  //  Accept Request
   const handleAccept = async (id) => {
     try {
       await axios.put(
@@ -559,7 +559,7 @@ const ClubRequestListing = () => {
     }
   };
 
-  // ✅ Reject Request
+  //  Reject Request
   const handleReject = async (id) => {
     try {
       await axios.put(
@@ -575,7 +575,7 @@ const ClubRequestListing = () => {
     }
   };
 
-  // ✅ UI Render
+  //  UI Render
   return (
     <Card noborder>
       <div className="md:flex pb-6 items-center">

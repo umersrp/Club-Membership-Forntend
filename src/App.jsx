@@ -187,7 +187,7 @@ function App() {
 
           <Route path="event-registration-listing" element={<EventRegistrationListing />} />
           <Route path="event-registration-form/:id" element={<EventRegistrationForm/>} />
-          <Route path="event-registration-form/add" element={<EventRegistrationForm />} />
+          <Route path="event-registration-form/add" element={<EventRegistrationForm/>} />
 
           <Route path="club-request-listing" element={<ClubRequestListing />} />
 

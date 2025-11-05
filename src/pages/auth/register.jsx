@@ -8,7 +8,7 @@ import { ToastContainer } from "react-toastify";
 // image imports
 import LogoWhite from "@/assets/images/logo/logo-white.svg";
 import Logo from "@/assets/images/logo/logo.png";
-import BgImage from "@/assets/images/all-img/bg-image.jpg"; // ✅ your background
+import BgImage from "@/assets/images/all-img/bg-image.jpg"; //  your background
 
 const Register = () => {
   const [isDark] = useDarkMode();

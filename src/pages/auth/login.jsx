@@ -7,7 +7,7 @@ import useDarkMode from "@/hooks/useDarkMode";
 // image imports
 import LogoWhite from "@/assets/images/logo/logo-white.svg";
 import Logo from "@/assets/images/logo/Srplogo.png";
-import BgImage from "@/assets/images/all-img/bg-image.jpg"; // ✅ your background image
+import BgImage from "@/assets/images/all-img/bg-image.jpg"; //  your background image
 
 const Login = () => {
   const [isDark] = useDarkMode();
@@ -16,7 +16,7 @@ const Login = () => {
     <div
       className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
       style={{
-        backgroundImage: `url(${BgImage})`, // ✅ background image
+        backgroundImage: `url(${BgImage})`, //  background image
       }}
     >
       <div className="bg-white/60 dark:bg-slate-800/90 backdrop-blur-md rounded-2xl shadow-xl w-[90%] max-w-md p-8">

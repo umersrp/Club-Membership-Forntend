@@ -19,13 +19,13 @@ const LoginForm = () => {
     CLUB_LEADER: "ClubLeader",
   });
 
-  // ✅ handle input changes
+  //  handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // ✅ handle login API
+  //  handle login API
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -49,7 +49,7 @@ const LoginForm = () => {
       if (!response.ok) throw new Error(message || "Login failed");
       if (!data?.token) throw new Error("Invalid credentials");
 
-      // ✅ Save token & user data
+      //  Save token & user data
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("user-name", data.user.name);
@@ -57,7 +57,7 @@ const LoginForm = () => {
 
       toast.success("Login Successful!");
 
-      // ✅ Navigate by role
+      //  Navigate by role
       const userRole = data.user.type;
       switch (userRole) {
         case UserRole.ADMIN:

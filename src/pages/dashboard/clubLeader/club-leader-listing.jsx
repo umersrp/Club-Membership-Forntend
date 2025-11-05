@@ -34,7 +34,7 @@ const ClubLeaderListing = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedLeaderId, setSelectedLeaderId] = useState(null);
 
-  // ✅ Define Table Columns
+  //  Define Table Columns
   const COLUMNS = [
     {
       Header: "Sr No",
@@ -109,7 +109,7 @@ const ClubLeaderListing = () => {
   const columns = useMemo(() => COLUMNS, []);
   const data = useMemo(() => records, [records]);
 
-  // ✅ React Table Setup
+  //  React Table Setup
   const tableInstance = useTable(
     {
       columns,
@@ -154,7 +154,7 @@ const ClubLeaderListing = () => {
 
   const { pageIndex, pageSize } = state;
 
-  // ✅ Fetch Club Leaders Data
+  //  Fetch Club Leaders Data
   const fetchClubLeaders = async (search = "") => {
     setLoading(true);
     try {
@@ -185,7 +185,7 @@ const ClubLeaderListing = () => {
     return () => clearTimeout(delay);
   }, [globalFilterValue, pageIndex, pageSize]);
 
-  // ✅ Delete Leader
+  //  Delete Leader
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem("token");
@@ -206,7 +206,7 @@ const ClubLeaderListing = () => {
     setDeleteModalOpen(true);
   };
 
-  // ✅ UI
+  //  UI
   return (
     <>
       <Card noborder>
@@ -229,7 +229,7 @@ const ClubLeaderListing = () => {
           </div>
         </div>
 
-        {/* ✅ Table */}
+        {/*  Table */}
         <div className="overflow-x-auto -mx-6">
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden">
@@ -301,7 +301,7 @@ const ClubLeaderListing = () => {
         </div>
       </Card>
 
-      {/* ✅ Delete Confirmation Modal */}
+      {/*  Delete Confirmation Modal */}
       <Modal
         activeModal={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}

@@ -33,7 +33,7 @@ const StudentListing = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState(null);
 
-  // ✅ Fetch Students
+  //  Fetch Students
   const fetchStudents = async (search = "") => {
     setLoading(true);
     try {
@@ -62,7 +62,7 @@ const StudentListing = () => {
     return () => clearTimeout(delay);
   }, [globalFilterValue]);
 
-  // ✅ Toggle Active/Inactive Status
+  //  Toggle Active/Inactive Status
   const toggleStatus = async (id, currentStatus) => {
     try {
       const token = localStorage.getItem("token");
@@ -86,7 +86,7 @@ const StudentListing = () => {
     }
   };
 
-  // ✅ Delete Student
+  //  Delete Student
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem("token");
@@ -107,7 +107,7 @@ const StudentListing = () => {
     setDeleteModalOpen(true);
   };
 
-  // ✅ Define Table Columns
+  //  Define Table Columns
   const COLUMNS = [
     {
       Header: "Sr No",
@@ -209,7 +209,7 @@ const StudentListing = () => {
   const columns = useMemo(() => COLUMNS, [students]);
   const data = useMemo(() => students, [students]);
 
-  // ✅ React Table Setup
+  //  React Table Setup
   const tableInstance = useTable(
     {
       columns,
@@ -244,7 +244,7 @@ const StudentListing = () => {
     prepareRow,
   } = tableInstance;
 
-  // ✅ UI
+  //  UI
   return (
     <>
       <Card noborder>
@@ -258,7 +258,7 @@ const StudentListing = () => {
           </div>
         </div>
 
-        {/* ✅ Table */}
+        {/*  Table */}
         <div className="overflow-x-auto -mx-6">
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden">
@@ -330,7 +330,7 @@ const StudentListing = () => {
         </div>
       </Card>
 
-      {/* ✅ Delete Confirmation Modal */}
+      {/*  Delete Confirmation Modal */}
       <Modal
         activeModal={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}

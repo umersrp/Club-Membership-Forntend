@@ -1,8 +1,489 @@
+// import React, { useState, useEffect } from "react";
+// import { useParams, useNavigate, useLocation } from "react-router-dom";
+// import Card from "@/components/ui/Card";
+// import Button from "@/components/ui/Button";
+// import axios from "axios";
+
+// const EventForm = () => {
+//   const { id } = useParams();
+//   const navigate = useNavigate();
+//   const location = useLocation();
+
+//   const mode = location.state?.mode || "add"; // add | view | edit
+//   const isViewMode = mode === "view";
+//   const isEditMode = mode === "edit";
+
+//   const [formData, setFormData] = useState({
+//     eventTitle: "",
+//     eventDescription: "",
+//     eventCategory: "",
+//     dateTime: "",
+//     location: "",
+//     duration: "",
+//     capacityLimit: "",
+//     registrationDeadline: "",
+//     targetGender: "",
+//     targetAudience: "",
+//     specificMajor: [],
+//     eventImage: null, // file or URL
+//     registrationRequired: false,
+//     additionalRequirements: "",
+//     certificateOffered: false,
+//     volunteerHoursAwarded: "",
+//   });
+
+//   const [message, setMessage] = useState("");
+//   const [loading, setLoading] = useState(isViewMode || isEditMode);
+
+//   // Fetch existing event (for view/edit)
+//   useEffect(() => {
+//     const fetchEvent = async () => {
+//       if (!(isViewMode || isEditMode) || !id || id === "add") {
+//         setLoading(false);
+//         return;
+//       }
+
+//       try {
+//         const token = localStorage.getItem("token");
+//         const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/event/${id}`, {
+//           headers: { Authorization: `${token}` },
+//         });
+
+//         const event = res.data.data || {};
+//         setFormData({
+//           eventTitle: event.eventTitle || "",
+//           eventDescription: event.eventDescription || "",
+//           eventCategory: event.eventCategory || "",
+//           dateTime: event.dateTime ? event.dateTime.split("T")[0] : "",
+//           location: event.location || "",
+//           duration: event.duration || "",
+//           capacityLimit: event.capacityLimit || "",
+//           registrationDeadline: event.registrationDeadline
+//             ? event.registrationDeadline.split("T")[0]
+//             : "",
+//           targetGender: event.targetGender || "",
+//           targetAudience: event.targetAudience || "",
+//           specificMajor: event.specificMajor || [],
+//           eventImage: event.eventImage || null,
+//           registrationRequired: event.registrationRequired || false,
+//           additionalRequirements: event.additionalRequirements || "",
+//           certificateOffered: event.certificateOffered || false,
+//           volunteerHoursAwarded: event.volunteerHoursAwarded || "",
+//         });
+//       } catch (err) {
+//         console.error("Error fetching event:", err);
+//         setMessage("Error loading event data");
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchEvent();
+//   }, [id, isViewMode, isEditMode]);
+
+//   // Handle text input
+//   const handleInputChange = (e) => {
+//     if (isViewMode) return;
+//     const { name, value } = e.target;
+//     setFormData((prev) => ({ ...prev, [name]: value }));
+//   };
+
+//   // Handle file input
+//   const handleFileChange = (e) => {
+//     if (isViewMode) return;
+//     setFormData((prev) => ({ ...prev, eventImage: e.target.files[0] }));
+//   };
+
+//   // Handle boolean selects (Yes/No)
+//   const handleBooleanChange = (e) => {
+//     if (isViewMode) return;
+//     const { name, value } = e.target;
+//     setFormData((prev) => ({
+//       ...prev,
+//       [name]: value === "true",
+//     }));
+//   };
+
+//   // Upload image to /upload/upload
+//   const uploadImage = async () => {
+//     if (!formData.eventImage || typeof formData.eventImage === "string") {
+//       return formData.eventImage || "";
+//     }
+
+//     try {
+//       const token = localStorage.getItem("token");
+//       const uploadData = new FormData();
+//       uploadData.append("documentFile", formData.eventImage);
+
+//       const res = await axios.post(
+//         `${process.env.REACT_APP_BASE_URL}/upload/upload`,
+//         uploadData,
+//         {
+//           headers: {
+//             "Content-Type": "multipart/form-data",
+//             Authorization: `${token}`,
+//           },
+//         }
+//       );
+
+//       return res.data.data; // should return the uploaded file URL
+//     } catch (err) {
+//       console.error("Image upload failed:", err);
+//       setMessage("Image upload failed");
+//       return "";
+//     }
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     if (isViewMode) return;
+
+//     // Validation
+//     if (!formData.eventTitle.trim())
+//       return setMessage("Event title is required");
+//     if (!formData.eventCategory)
+//       return setMessage("Event category is required");
+//     if (!formData.dateTime)
+//       return setMessage("Event date/time is required");
+
+//     try {
+//       const token = localStorage.getItem("token");
+
+//       // Upload image first
+//       const imageUrl = await uploadImage();
+
+//       // Prepare final payload
+//       const payload = {
+//         eventTitle: formData.eventTitle,
+//         eventDescription: formData.eventDescription,
+//         eventCategory: formData.eventCategory,
+//         dateTime: formData.dateTime,
+//         location: formData.location,
+//         duration: formData.duration,
+//         capacityLimit: Number(formData.capacityLimit),
+//         registrationDeadline: formData.registrationDeadline,
+//         targetGender: formData.targetGender,
+//         targetAudience: formData.targetAudience,
+//         specificMajor:
+//           typeof formData.specificMajor === "string"
+//             ? formData.specificMajor.split(",").map((s) => s.trim()).filter(Boolean)
+//             : formData.specificMajor,
+//         eventImage: imageUrl,
+//         registrationRequired: formData.registrationRequired,
+//         additionalRequirements: formData.additionalRequirements,
+//         certificateOffered: formData.certificateOffered,
+//         volunteerHoursAwarded: Number(formData.volunteerHoursAwarded),
+//       };
+
+//       // Create or update event
+//       if (isEditMode) {
+//         await axios.put(
+//           `${process.env.REACT_APP_BASE_URL}/event/update/${id}`,
+//           payload,
+//           {
+//             headers: {
+//               "Content-Type": "application/json",
+//               Authorization: `${token}`,
+//             },
+//           }
+//         );
+//         setMessage("Event updated successfully!");
+//       } else {
+//         await axios.post(`${process.env.REACT_APP_BASE_URL}/event/create`, payload, {
+//           headers: {
+//             "Content-Type": "application/json",
+//             Authorization: `${token}`,
+//           },
+//         });
+//         setMessage("Event created successfully!");
+//       }
+
+//       setTimeout(() => navigate("/event-listing"), 900);
+//     } catch (err) {
+//       console.error("Error saving event:", err);
+//       setMessage("Error saving event");
+//     }
+//   };
+
+//   if (loading) return <p>Loading event data...</p>;
+
+//   return (
+//     <div>
+//       <Card
+//         title={isViewMode ? "View Event" : isEditMode ? "Edit Event" : "Create Event"}
+//       >
+//         <form onSubmit={handleSubmit} className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-8">
+//           {/* Event Title */}
+//           <div>
+//             <label className="block text-sm font-medium mb-1">Event Title</label>
+//             <input
+//               type="text"
+//               name="eventTitle"
+//               value={formData.eventTitle}
+//               onChange={handleInputChange}
+//               className={`border p-2 w-full rounded ${
+//                 isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
+//               }`}
+//               readOnly={isViewMode}
+//             />
+//           </div>
+
+//           {/* Event Description */}
+//           <div>
+//             <label className="block text-sm font-medium mb-1">Description</label>
+//             <textarea
+//               name="eventDescription"
+//               value={formData.eventDescription}
+//               onChange={handleInputChange}
+//               rows={1}
+//               className={`border p-2 w-full rounded ${
+//                 isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
+//               }`}
+//               readOnly={isViewMode}
+//             />
+//           </div>
+
+//           {/* Category */}
+//           <div>
+//             <label className="block text-sm font-medium mb-1">Category</label>
+//             <select
+//               name="eventCategory"
+//               value={formData.eventCategory}
+//               onChange={handleInputChange}
+//               disabled={isViewMode}
+//               className="border p-2 w-full rounded"
+//             >
+//               <option value="">Select Category</option>
+//               <option value="Workshop">Workshop</option>
+//               <option value="Competition">Competition</option>
+//               <option value="Social">Social</option>
+//               <option value="Training">Training</option>
+//               <option value="Other">Other</option>
+//             </select>
+//           </div>
+
+//           {/* Date & Time */}
+//           <div>
+//             <label className="block text-sm font-medium mb-1">Date & Time</label>
+//             <input
+//               type="datetime-local"
+//               name="dateTime"
+//               value={formData.dateTime}
+//               onChange={handleInputChange}
+//               className={`border p-2 w-full rounded ${
+//                 isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
+//               }`}
+//               readOnly={isViewMode}
+//             />
+//           </div>
+
+//           {/* Location */}
+//           <div>
+//             <label className="block text-sm font-medium mb-1">Location</label>
+//             <input
+//               type="text"
+//               name="location"
+//               value={formData.location}
+//               onChange={handleInputChange}
+//               className="border p-2 w-full rounded"
+//               readOnly={isViewMode}
+//             />
+//           </div>
+
+//           {/* Duration */}
+//           <div>
+//             <label className="block text-sm font-medium mb-1">Duration</label>
+//             <input
+//               type="text"
+//               name="duration"
+//               value={formData.duration}
+//               onChange={handleInputChange}
+//               className="border p-2 w-full rounded"
+//               readOnly={isViewMode}
+//             />
+//           </div>
+
+//           {/* Capacity Limit */}
+//           <div>
+//             <label className="block text-sm font-medium mb-1">Capacity Limit</label>
+//             <input
+//               type="number"
+//               name="capacityLimit"
+//               value={formData.capacityLimit}
+//               onChange={handleInputChange}
+//               className="border p-2 w-full rounded"
+//               readOnly={isViewMode}
+//             />
+//           </div>
+
+//           {/* Registration Deadline */}
+//           <div>
+//             <label className="block text-sm font-medium mb-1">Registration Deadline</label>
+//             <input
+//               type="date"
+//               name="registrationDeadline"
+//               value={formData.registrationDeadline}
+//               onChange={handleInputChange}
+//               className="border p-2 w-full rounded"
+//               readOnly={isViewMode}
+//             />
+//           </div>
+
+//           {/* Gender */}
+//           <div>
+//             <label className="block text-sm font-medium mb-1">Target Gender</label>
+//             <select
+//               name="targetGender"
+//               value={formData.targetGender}
+//               onChange={handleInputChange}
+//               disabled={isViewMode}
+//               className="border p-2 w-full rounded"
+//             >
+//               <option value="">Select</option>
+//               <option value="All">All</option>
+//               <option value="Male">Male</option>
+//               <option value="Female">Female</option>
+//             </select>
+//           </div>
+
+//           {/* Target Audience */}
+//           <div>
+//             <label className="block text-sm font-medium mb-1">Target Audience</label>
+//             <input
+//               type="text"
+//               name="targetAudience"
+//               value={formData.targetAudience}
+//               onChange={handleInputChange}
+//               className="border p-2 w-full rounded"
+//               readOnly={isViewMode}
+//             />
+//           </div>
+
+//           {/* Specific Major */}
+//           <div>
+//             <label className="block text-sm font-medium mb-1">Specific Majors</label>
+//             <input
+//               type="text"
+//               name="specificMajor"
+//               value={
+//                 Array.isArray(formData.specificMajor)
+//                   ? formData.specificMajor.join(", ")
+//                   : formData.specificMajor
+//               }
+//               onChange={handleInputChange}
+//               className="border p-2 w-full rounded"
+//               readOnly={isViewMode}
+//             />
+//           </div>
+
+//           {/* Event Image */}
+//           <div>
+//             <label className="block text-sm font-medium mb-1">Event Image</label>
+//             <input
+//               type="file"
+//               accept="image/*"
+//               onChange={handleFileChange}
+//               disabled={isViewMode}
+//               className="border p-2 w-full rounded"
+//             />
+//             {formData.eventImage && typeof formData.eventImage === "string" && (
+//               <img
+//                 src={formData.eventImage}
+//                 alt="Event"
+//                 className="w-28 h-28 rounded mt-2 object-cover"
+//               />
+//             )}
+//           </div>
+
+//           {/* Registration Required */}
+//           <div>
+//             <label className="block text-sm font-medium mb-1">Registration Required</label>
+//             <select
+//               name="registrationRequired"
+//               value={formData.registrationRequired}
+//               onChange={handleBooleanChange}
+//               disabled={isViewMode}
+//               className="border p-2 w-full rounded"
+//             >
+//               <option value="false">No</option>
+//               <option value="true">Yes</option>
+//             </select>
+//           </div>
+
+//           {/* Additional Requirements */}
+//           <div>
+//             <label className="block text-sm font-medium mb-1">Additional Requirements</label>
+//             <textarea
+//               name="additionalRequirements"
+//               value={formData.additionalRequirements}
+//               onChange={handleInputChange}
+//               rows={1}
+//               className="border p-2 w-full rounded"
+//               readOnly={isViewMode}
+//             />
+//           </div>
+
+//           {/* Certificate Offered */}
+//           <div>
+//             <label className="block text-sm font-medium mb-1">Certificate Offered</label>
+//             <select
+//               name="certificateOffered"
+//               value={formData.certificateOffered}
+//               onChange={handleBooleanChange}
+//               disabled={isViewMode}
+//               className="border p-2 w-full rounded"
+//             >
+//               <option value="false">No</option>
+//               <option value="true">Yes</option>
+//             </select>
+//           </div>
+
+//           {/* Volunteer Hours */}
+//           <div>
+//             <label className="block text-sm font-medium mb-1">Volunteer Hours Awarded</label>
+//             <input
+//               type="number"
+//               name="volunteerHoursAwarded"
+//               value={formData.volunteerHoursAwarded}
+//               onChange={handleInputChange}
+//               className="border p-2 w-full rounded"
+//               readOnly={isViewMode}
+//             />
+//           </div>
+//         </form>
+
+//         {/* Buttons */}
+//         <div className="flex justify-end gap-4 p-4">
+//           <Button
+//             text="Cancel"
+//             className="btn-light"
+//             type="button"
+//             onClick={() => navigate("/event-listing")}
+//           />
+//           {!isViewMode && (
+//             <Button
+//               text={isEditMode ? "Update Event" : "Create Event"}
+//               className="btn-primary"
+//               type="submit"
+//               onClick={handleSubmit}
+//             />
+//           )}
+//         </div>
+
+//         {message && <p className="text-center mt-4">{message}</p>}
+//       </Card>
+//     </div>
+//   );
+// };
+
+// export default EventForm;
+
+
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
-import Fileinput from "@/components/ui/Fileinput";
 import axios from "axios";
 
 const EventForm = () => {
@@ -10,7 +491,7 @@ const EventForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const mode = location.state?.mode || "add"; // add | view | edit
+  const mode = location.state?.mode || "add";
   const isViewMode = mode === "view";
   const isEditMode = mode === "edit";
 
@@ -25,28 +506,33 @@ const EventForm = () => {
     registrationDeadline: "",
     targetGender: "",
     targetAudience: "",
+    specificMajor: [],
     eventImage: null,
-    registrationRequired: "",
+    registrationRequired: false,
     additionalRequirements: "",
-    certificateOffered: "",
-    volunteerHours: "",
+    certificateOffered: false,
+    volunteerHoursAwarded: "",
   });
 
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(isViewMode || isEditMode);
+  const [uploading, setUploading] = useState(false); // <-- new
+  const [uploadedImageUrl, setUploadedImageUrl] = useState(""); // <-- new
 
-  // Fetch event data for edit/view
+  // Fetch existing event (for view/edit)
   useEffect(() => {
     const fetchEvent = async () => {
       if (!(isViewMode || isEditMode) || !id || id === "add") {
         setLoading(false);
         return;
       }
+
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/events/GetById/${id}`, {
+        const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/event/${id}`, {
           headers: { Authorization: `${token}` },
         });
+
         const event = res.data.data || {};
         setFormData({
           eventTitle: event.eventTitle || "",
@@ -61,12 +547,14 @@ const EventForm = () => {
             : "",
           targetGender: event.targetGender || "",
           targetAudience: event.targetAudience || "",
-          eventImage: null,
-          registrationRequired: event.registrationRequired || "",
+          specificMajor: event.specificMajor || [],
+          eventImage: event.eventImage || null,
+          registrationRequired: event.registrationRequired || false,
           additionalRequirements: event.additionalRequirements || "",
-          certificateOffered: event.certificateOffered || "",
-          volunteerHours: event.volunteerHours || "",
+          certificateOffered: event.certificateOffered || false,
+          volunteerHoursAwarded: event.volunteerHoursAwarded || "",
         });
+        setUploadedImageUrl(event.eventImage || "");
       } catch (err) {
         console.error("Error fetching event:", err);
         setMessage("Error loading event data");
@@ -78,51 +566,120 @@ const EventForm = () => {
     fetchEvent();
   }, [id, isViewMode, isEditMode]);
 
+  // Handle input
   const handleInputChange = (e) => {
     if (isViewMode) return;
-    const { name, value, type, files } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "file" ? files[0] : value,
-    }));
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
-    const handleFileChange = (e) => {
+
+  // Handle file selection
+  const handleFileChange = (e) => {
     if (isViewMode) return;
-    setFormData((prev) => ({ ...prev, clubLogo: e.target.files[0] }));
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, eventImage: file }));
+    }
+  };
+
+  // Upload when eventImage changes
+  useEffect(() => {
+    const uploadImage = async () => {
+      if (!formData.eventImage || typeof formData.eventImage === "string") return;
+      setUploading(true);
+      try {
+        const token = localStorage.getItem("token");
+        const uploadData = new FormData();
+        uploadData.append("documentFile", formData.eventImage);
+
+        const res = await axios.post(
+          `${process.env.REACT_APP_BASE_URL}/upload/upload`,
+          uploadData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `${token}`,
+            },
+          }
+        );
+
+        const url = res.data.data;
+        setUploadedImageUrl(url);
+        setFormData((prev) => ({ ...prev, eventImage: url }));
+        setMessage("Image uploaded successfully!");
+      } catch (err) {
+        console.error("Image upload failed:", err);
+        setMessage("Image upload failed");
+      } finally {
+        setUploading(false);
+      }
+    };
+
+    uploadImage();
+  }, [formData.eventImage]);
+
+  // Handle booleans
+  const handleBooleanChange = (e) => {
+    if (isViewMode) return;
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value === "true" }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isViewMode) return;
 
-    // Basic validation
-    if (!formData.eventTitle.trim()) return setMessage("Event title is required");
-    if (!formData.eventCategory) return setMessage("Event category is required");
-    if (!formData.dateTime) return setMessage("Event date/time is required");
+    if (!formData.eventTitle.trim())
+      return setMessage("Event title is required");
 
     try {
       const token = localStorage.getItem("token");
-      const form = new FormData();
 
-      for (const key in formData) form.append(key, formData[key]);
+      const payload = {
+        eventTitle: formData.eventTitle,
+        eventDescription: formData.eventDescription,
+        eventCategory: formData.eventCategory,
+        dateTime: formData.dateTime,
+        location: formData.location,
+        duration: formData.duration,
+        capacityLimit: Number(formData.capacityLimit),
+        registrationDeadline: formData.registrationDeadline,
+        targetGender: formData.targetGender,
+        targetAudience: formData.targetAudience,
+        specificMajor:
+          typeof formData.specificMajor === "string"
+            ? formData.specificMajor.split(",").map((s) => s.trim()).filter(Boolean)
+            : formData.specificMajor,
+        eventImage: uploadedImageUrl || formData.eventImage,
+        registrationRequired: formData.registrationRequired,
+        additionalRequirements: formData.additionalRequirements,
+        certificateOffered: formData.certificateOffered,
+        volunteerHoursAwarded: Number(formData.volunteerHoursAwarded),
+      };
 
       if (isEditMode) {
         await axios.put(
-          `${process.env.REACT_APP_BASE_URL}/events/update/${id}`,
-          form,
+          `${process.env.REACT_APP_BASE_URL}/event/update/${id}`,
+          payload,
           {
-            headers: { Authorization: `${token}` },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `${token}`,
+            },
           }
         );
         setMessage("Event updated successfully!");
       } else {
-        await axios.post(`${process.env.REACT_APP_BASE_URL}/events/create`, form, {
-          headers: { Authorization: `${token}` },
+        await axios.post(`${process.env.REACT_APP_BASE_URL}/event/create`, payload, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `${token}`,
+          },
         });
         setMessage("Event created successfully!");
       }
 
-      setTimeout(() => navigate("/events"), 900);
+      setTimeout(() => navigate("/event-listing"), 900);
     } catch (err) {
       console.error("Error saving event:", err);
       setMessage("Error saving event");
@@ -134,241 +691,271 @@ const EventForm = () => {
   return (
     <div>
       <Card
-        title={
-          isViewMode ? "View Event" : isEditMode ? "Edit Event" : "Create Event"
-        }
+        title={isViewMode ? "View Event" : isEditMode ? "Edit Event" : "Create Event"}
       >
-        <form onSubmit={handleSubmit} className="p-4">
-          <div className="lg:grid-cols-3 grid gap-8 grid-cols-1">
-            {/* Event Title */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Event Title</label>
-              <input
-                type="text"
-                name="eventTitle"
-                value={formData.eventTitle}
-                onChange={handleInputChange}
-                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
-                readOnly={isViewMode}
-              />
-            </div>
-
-            {/* Description */}
-            <div className="">
-              <label className="block text-sm font-medium mb-1">Event Description</label>
-              <textarea
-                name="eventDescription"
-                value={formData.eventDescription}
-                onChange={handleInputChange}
-                rows={1}
-                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
-                readOnly={isViewMode}
-              />
-            </div>
-
-            {/* Category */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Event Category</label>
-              <select
-                name="eventCategory"
-                value={formData.eventCategory}
-                onChange={handleInputChange}
-                disabled={isViewMode}
-                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
-              >
-                <option value="">Select Category</option>
-                <option value="Workshop">Workshop</option>
-                <option value="Competition">Competition</option>
-                <option value="Social">Social</option>
-                <option value="Training">Training</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            {/* Date & Time */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Date & Time</label>
-              <input
-                type="datetime-local"
-                name="dateTime"
-                value={formData.dateTime}
-                onChange={handleInputChange}
-                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
-                readOnly={isViewMode}
-              />
-            </div>
-
-            {/* Location */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Location / Venue</label>
-              <input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={handleInputChange}
-                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
-                readOnly={isViewMode}
-              />
-            </div>
-
-            {/* Duration */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Duration (hours)</label>
-              <input
-                type="number"
-                name="duration"
-                value={formData.duration}
-                onChange={handleInputChange}
-                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
-                readOnly={isViewMode}
-              />
-            </div>
-
-            {/* Capacity */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Capacity Limit</label>
-              <input
-                type="number"
-                name="capacityLimit"
-                value={formData.capacityLimit}
-                onChange={handleInputChange}
-                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
-                readOnly={isViewMode}
-              />
-            </div>
-
-            {/* Registration Deadline */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Registration Deadline</label>
-              <input
-                type="date"
-                name="registrationDeadline"
-                value={formData.registrationDeadline}
-                onChange={handleInputChange}
-                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
-                readOnly={isViewMode}
-              />
-            </div>
-
-            {/* Target Gender */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Target Gender</label>
-              <select
-                name="targetGender"
-                value={formData.targetGender}
-                onChange={handleInputChange}
-                disabled={isViewMode}
-                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
-              >
-                <option value="">Select</option>
-                <option value="All">All</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
-            </div>
-
-            {/* Target Audience */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Target Audience</label>
-              <input
-                type="text"
-                name="targetAudience"
-                value={formData.targetAudience}
-                onChange={handleInputChange}
-                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
-                readOnly={isViewMode}
-              />
-            </div>
-
-            {/* Event Image */}
-            <div>
-              <label className="block mb-1 text-sm font-medium">Event Image / Poster</label>
-              <input
-                type="file"
-                name="eventImage"
-                accept="image/*"
-                onChange={handleFileChange}
-                disabled={isViewMode}
-                className="border p-2 w-full rounded"
-              />
-            </div>
-
-            {/* Registration Required */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Registration Required?</label>
-              <select
-                name="registrationRequired"
-                value={formData.registrationRequired}
-                onChange={handleInputChange}
-                disabled={isViewMode}
-                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
-              >
-                <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
-            </div>
-
-            {/* Additional Requirements */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Additional Requirements</label>
-              <textarea
-                name="additionalRequirements"
-                value={formData.additionalRequirements}
-                onChange={handleInputChange}
-                rows={1}
-                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
-                readOnly={isViewMode}
-              />
-            </div>
-
-            {/* Certificate Offered */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Certificate Offered?</label>
-              <select
-                name="certificateOffered"
-                value={formData.certificateOffered}
-                onChange={handleInputChange}
-                disabled={isViewMode}
-                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
-              >
-                <option value="">Select</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
-            </div>
-
-            {/* Volunteer Hours */}
-            <div>
-              <label className="block text-sm font-medium mb-1">Volunteer Hours Awarded</label>
-              <input
-                type="number"
-                name="volunteerHours"
-                value={formData.volunteerHours}
-                onChange={handleInputChange}
-                className={`border p-2 w-full rounded ${isViewMode ? "bg-gray-100 cursor-not-allowed" : ""}`}
-                readOnly={isViewMode}
-              />
-            </div>
+        <form
+          onSubmit={handleSubmit}
+          className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-8"
+        >
+          {/* ... other form inputs remain the same ... */}
+         {/* Event Title */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Event Title</label>
+            <input
+              type="text"
+              name="eventTitle"
+              value={formData.eventTitle}
+              onChange={handleInputChange}
+              className={`border p-2 w-full rounded ${
+                isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
+              }`}
+              readOnly={isViewMode}
+            />
           </div>
 
-          {/* Buttons */}
-          <div className="flex justify-end gap-4 pt-6">
-            <Button
-              text="Cancel"
-              className="btn-light"
-              type="button"
-              onClick={() => navigate("/event-listing")}
+          {/* Event Description */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Description</label>
+            <textarea
+              name="eventDescription"
+              value={formData.eventDescription}
+              onChange={handleInputChange}
+              rows={1}
+              className={`border p-2 w-full rounded ${
+                isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
+              }`}
+              readOnly={isViewMode}
             />
-            {!isViewMode && (
-              <Button
-                text={isEditMode ? "Update Event" : "Create Event"}
-                className="btn-primary"
-                type="submit"
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Category</label>
+            <select
+              name="eventCategory"
+              value={formData.eventCategory}
+              onChange={handleInputChange}
+              disabled={isViewMode}
+              className="border p-2 w-full rounded"
+            >
+              <option value="">Select Category</option>
+              <option value="Workshop">Workshop</option>
+              <option value="Competition">Competition</option>
+              <option value="Social">Social</option>
+              <option value="Training">Training</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          {/* Date & Time */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Date & Time</label>
+            <input
+              type="datetime-local"
+              name="dateTime"
+              value={formData.dateTime}
+              onChange={handleInputChange}
+              className={`border p-2 w-full rounded ${
+                isViewMode ? "bg-gray-100 cursor-not-allowed" : ""
+              }`}
+              readOnly={isViewMode}
+            />
+          </div>
+
+          {/* Location */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Location</label>
+            <input
+              type="text"
+              name="location"
+              value={formData.location}
+              onChange={handleInputChange}
+              className="border p-2 w-full rounded"
+              readOnly={isViewMode}
+            />
+          </div>
+
+          {/* Duration */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Duration</label>
+            <input
+              type="text"
+              name="duration"
+              value={formData.duration}
+              onChange={handleInputChange}
+              className="border p-2 w-full rounded"
+              readOnly={isViewMode}
+            />
+          </div>
+
+          {/* Capacity Limit */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Capacity Limit</label>
+            <input
+              type="number"
+              name="capacityLimit"
+              value={formData.capacityLimit}
+              onChange={handleInputChange}
+              className="border p-2 w-full rounded"
+              readOnly={isViewMode}
+            />
+          </div>
+
+          {/* Registration Deadline */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Registration Deadline</label>
+            <input
+              type="date"
+              name="registrationDeadline"
+              value={formData.registrationDeadline}
+              onChange={handleInputChange}
+              className="border p-2 w-full rounded"
+              readOnly={isViewMode}
+            />
+          </div>
+
+          {/* Gender */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Target Gender</label>
+            <select
+              name="targetGender"
+              value={formData.targetGender}
+              onChange={handleInputChange}
+              disabled={isViewMode}
+              className="border p-2 w-full rounded"
+            >
+              <option value="">Select</option>
+              <option value="All">All</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+
+          {/* Target Audience */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Target Audience</label>
+            <input
+              type="text"
+              name="targetAudience"
+              value={formData.targetAudience}
+              onChange={handleInputChange}
+              className="border p-2 w-full rounded"
+              readOnly={isViewMode}
+            />
+          </div>
+
+          {/* Specific Major */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Specific Majors</label>
+            <input
+              type="text"
+              name="specificMajor"
+              value={
+                Array.isArray(formData.specificMajor)
+                  ? formData.specificMajor.join(", ")
+                  : formData.specificMajor
+              }
+              onChange={handleInputChange}
+              className="border p-2 w-full rounded"
+              readOnly={isViewMode}
+            />
+          </div>
+          {/* Event Image */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Event Image</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              disabled={isViewMode || uploading}
+              className="border p-2 w-full rounded"
+            />
+            {uploading && <p className="text-blue-500 text-sm mt-1">Uploading...</p>}
+            {uploadedImageUrl && (
+              <img
+                src={uploadedImageUrl}
+                alt="Event"
+                className="w-28 h-28 rounded mt-2 object-cover"
               />
             )}
           </div>
+
+          
+          {/* Registration Required */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Registration Required</label>
+            <select
+              name="registrationRequired"
+              value={formData.registrationRequired}
+              onChange={handleBooleanChange}
+              disabled={isViewMode}
+              className="border p-2 w-full rounded"
+            >
+              <option value="false">No</option>
+              <option value="true">Yes</option>
+            </select>
+          </div>
+
+          {/* Additional Requirements */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Additional Requirements</label>
+            <textarea
+              name="additionalRequirements"
+              value={formData.additionalRequirements}
+              onChange={handleInputChange}
+              rows={1}
+              className="border p-2 w-full rounded"
+              readOnly={isViewMode}
+            />
+          </div>
+
+          {/* Certificate Offered */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Certificate Offered</label>
+            <select
+              name="certificateOffered"
+              value={formData.certificateOffered}
+              onChange={handleBooleanChange}
+              disabled={isViewMode}
+              className="border p-2 w-full rounded"
+            >
+              <option value="false">No</option>
+              <option value="true">Yes</option>
+            </select>
+          </div>
+
+          {/* Volunteer Hours */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Volunteer Hours Awarded</label>
+            <input
+              type="number"
+              name="volunteerHoursAwarded"
+              value={formData.volunteerHoursAwarded}
+              onChange={handleInputChange}
+              className="border p-2 w-full rounded"
+              readOnly={isViewMode}
+            />
+          </div>
         </form>
+
+        {/* Buttons */}
+        <div className="flex justify-end gap-4 p-4">
+          <Button
+            text="Cancel"
+            className="btn-light"
+            type="button"
+            onClick={() => navigate("/event-listing")}
+          />
+          {!isViewMode && (
+            <Button
+              text={isEditMode ? "Update Event" : "Create Event"}
+              className="btn-primary"
+              type="submit"
+              onClick={handleSubmit}
+              disabled={uploading}
+            />
+          )}
+        </div>
 
         {message && <p className="text-center mt-4">{message}</p>}
       </Card>
