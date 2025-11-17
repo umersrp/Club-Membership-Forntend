@@ -201,7 +201,7 @@ const ClubListing = () => {
                       <Button
                         icon="heroicons-outline:plus-sm"
                         text="Join Club"
-                        className="flex-1 btn font-normal btn-sm bg-gradient-to-r from-[#3AB89D] to-[#3A90B8] text-white border-0 hover:opacity-90"
+                        className="flex-1 btn font-normal btn-sm bg-gradient-to-r from-[#18BB90] to-[#0C6B47] text-white border-0 hover:opacity-90"
                         iconClass="text-lg"
                         onClick={() => setJoinClub(club)}
                       />

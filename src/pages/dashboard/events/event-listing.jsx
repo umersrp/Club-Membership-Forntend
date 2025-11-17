@@ -224,7 +224,7 @@ const EventListing = () => {
             <Button
               icon="heroicons-outline:plus-sm"
               text="Add Event"
-              className="btn font-normal btn-sm bg-gradient-to-r from-[#3AB89D] to-[#3A90B8] text-white border-0 hover:opacity-90"
+              className="btn font-normal btn-sm bg-gradient-to-r from-[#18BB90] to-[#0C6B47] text-white border-0 hover:opacity-90"
               iconClass="text-lg"
               onClick={() => navigate("/event-form/add", { state: { mode: "add" } })}
             />
@@ -243,7 +243,7 @@ const EventListing = () => {
                   {headerGroups.map((headerGroup) => (
                     <tr
                       {...headerGroup.getHeaderGroupProps()}
-                      className="bg-gradient-to-r from-[#3AB89D] to-[#3A90B8]"
+                      className="bg-gradient-to-r from-[#18BB90] to-[#0C6B47]"
                     >
                       {headerGroup.headers.map((column) => (
                         <th

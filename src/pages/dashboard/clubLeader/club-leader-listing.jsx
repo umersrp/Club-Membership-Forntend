@@ -13,7 +13,7 @@ import {
   usePagination,
 } from "react-table";
 import GlobalFilter from "@/pages/table/react-tables/GlobalFilter";
-import Logo from "@/assets/images/logo/SrpLogo.png";
+import Logo from "@/assets/images/logo/logo.png";
 import Modal from "@/components/ui/Modal";
 
 const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
@@ -220,7 +220,7 @@ const ClubLeaderListing = () => {
             <Button
               icon="heroicons-outline:plus-sm"
               text="Add Club Leader"
-              className="btn font-normal btn-sm bg-gradient-to-r from-[#3AB89D] to-[#3A90B8] text-white border-0 hover:opacity-90"
+              className="btn font-normal btn-sm bg-gradient-to-r from-[#18BB90] to-[#0C6B47] text-white border-0 hover:opacity-90"
               iconClass="text-lg"
               onClick={() =>
                 navigate("/club-leader-form/add", { state: { mode: "add" } })
@@ -242,7 +242,7 @@ const ClubLeaderListing = () => {
                   className="min-w-full divide-y divide-slate-100 table-fixed"
                   {...getTableProps()}
                 >
-                  <thead className="bg-gradient-to-r from-[#3AB89D] to-[#3A90B8]">
+                  <thead className="bg-gradient-to-r from-[#18BB90] to-[#0C6B47]">
                     {headerGroups.map((headerGroup, index) => (
                       <tr {...headerGroup.getHeaderGroupProps()} key={index}>
                         {headerGroup.headers.map((column) => (
@@ -306,7 +306,7 @@ const ClubLeaderListing = () => {
         activeModal={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         title="Confirm Delete"
-        themeClass="bg-gradient-to-r from-[#3AB89D] to-[#3A90B8]"
+        themeClass="bg-gradient-to-r from-[#18BB90] to-[#0C6B47]"
         centered
         footerContent={
           <>

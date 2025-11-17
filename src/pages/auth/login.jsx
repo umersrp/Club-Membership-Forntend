@@ -6,8 +6,8 @@ import useDarkMode from "@/hooks/useDarkMode";
 
 // image imports
 import LogoWhite from "@/assets/images/logo/logo-white.svg";
-import Logo from "@/assets/images/logo/Srplogo.png";
-import BgImage from "@/assets/images/all-img/bg-image.jpg"; //  your background image
+import Logo from "@/assets/images/logo/logo.png";
+import BgImage from "@/assets/images/all-img/bg-image.jpeg"; //  your background image
 
 const Login = () => {
   const [isDark] = useDarkMode();

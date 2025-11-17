@@ -1,5 +1,10 @@
 export const clubLeaderMenu = [
    {
+    title: "Leader Board",
+    icon: "heroicons:calendar-days",
+    link: "leader-board",
+  },
+   {
     title: "New Club ",
     icon: "heroicons:square-2-stack",
     link: "new-club-listing",
@@ -14,6 +19,11 @@ export const clubLeaderMenu = [
     title: "ClubRequest",
     icon: "heroicons:calendar-days",
     link: "club-request-listing",
+  },
+   {
+    title: "EventRequest",
+    icon: "heroicons:calendar-days",
+    link: "event-request-listing",
   },
 ];
 
@@ -41,6 +51,11 @@ export const menuItems = [
   //   icon: "heroicons:academic-cap",
   //   link: "student-listing",
   // },
+   {
+    title: "Leader Board",
+    icon: "heroicons:calendar-days",
+    link: "leader-board",
+  },
   {
     title: "New Club ",
     icon: "heroicons:square-2-stack",

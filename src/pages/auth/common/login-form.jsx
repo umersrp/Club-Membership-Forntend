@@ -54,6 +54,7 @@ const LoginForm = () => {
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("user-name", data.user.name);
       localStorage.setItem("user-role", data.user.type);
+      localStorage.setItem("userId", data.user._id);
 
       toast.success("Login Successful!");
 
@@ -69,7 +70,7 @@ const LoginForm = () => {
           break;
 
         case UserRole.CLUB_LEADER:
-          navigate("/event-listing"); // club leader page
+          navigate("/leader-board"); // club leader page
           break;
 
         default:
