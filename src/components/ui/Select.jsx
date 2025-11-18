@@ -3,8 +3,8 @@ import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { components } from "react-select";
 
-const primary500 = "#4098ab";
-const primary900 = "#4097ab7a";
+const primary500 = "#18e2a0";
+const primary900 = "#18bb90";
 
 const customStyles = {
   control: (base, state) => ({
@@ -33,7 +33,7 @@ const DropdownIndicator = (props) => (
       height="16"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="#6dacbaff"
+      stroke="#18e2a0"
       strokeWidth="4"
       strokeLinecap="round"
       strokeLinejoin="round"

@@ -104,60 +104,6 @@ const handleSubmit = async (e) => {
   }
 };
 
-// const handleSubmit = async (e) => {
-//   e.preventDefault();
-//   if (isViewMode) return;
-
-//   if (!formData.motivation.trim()) return setMessage("Motivation is required");
-//   if (!formData.contribution.trim()) return setMessage("Expected contribution is required");
-//   if (!formData.availability.trim()) return setMessage("Availability (hours/week) is required");
-
-//   try {
-//     const token = localStorage.getItem("token");
-//     const userId = localStorage.getItem("userId");
-
-//     if (isEditMode) {
-//       await axios.put(
-//         `${process.env.REACT_APP_BASE_URL}/join-club-applications/update/${id}`,
-//         formData,
-//         {
-//           headers: { "Content-Type": "application/json", Authorization: `${token}` },
-//         }
-//       );
-//       setMessage("Application updated successfully!");
-//     } else {
-//       //  Create new joining request
-//       const payload = {
-//         ...formData,
-//         clubId: club?._id,
-//         clubName: club?.clubName,
-//         clubLeaderId:
-//           typeof club?.createdBy === "object"
-//             ? club?.createdBy?._id
-//             : club?.createdBy, // Handles both string or object cases
-//         userId: userId,
-//       };
-
-//       console.log("📦 Sending payload:", payload); // Debug check before sending
-
-//       await axios.post(
-//         `${process.env.REACT_APP_BASE_URL}/Joining-requests/create`,
-//         payload,
-//         {
-//           headers: { "Content-Type": "application/json", Authorization: `${token}` },
-//         }
-//       );
-//       setMessage("Application submitted successfully!");
-//     }
-
-//     setTimeout(() => onClose(), 900);
-//   } catch (err) {
-//     console.error("Error saving application:", err);
-//     setMessage("Error saving application");
-//   }
-// };
-
-
 
   if (loading) return <p className="text-center p-4">Loading application data...</p>;
 
@@ -258,11 +204,6 @@ const handleSubmit = async (e) => {
             />
           </div>
         </div>
-
-        {/*  Optional debug info */}
-        <p className="text-xs text-gray-500 mt-3">
-          Submitting for Club ID: <strong>{club?._id}</strong>
-        </p>
 
         {/* Buttons */}
         <div className="flex justify-end gap-3 pt-6">

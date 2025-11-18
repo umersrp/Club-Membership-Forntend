@@ -113,7 +113,7 @@ const ClubDetail = () => {
           <Button
             text="Back to List"
             className="btn-light"
-            onClick={() => navigate("/new-club-listing")}
+            onClick={() => navigate("/club-listing")}
           />
         </div>
       </Card>
