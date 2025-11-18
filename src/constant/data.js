@@ -15,6 +15,13 @@ export const clubLeaderMenu = [
     icon: "heroicons:calendar-days",
     link: "club-request-listing",
   },
+  {
+     title: "EventRequest",
+    icon: "heroicons:calendar-days",
+    link: "event-request-listing",
+  }
+
+ 
 ];
 
 export const studentMenu = [

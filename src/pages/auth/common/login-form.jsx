@@ -63,7 +63,6 @@ const LoginForm = () => {
         case UserRole.ADMIN:
           navigate("/new-club-listing"); // your admin page
           break;
-
         case UserRole.STUDENT:
           navigate("/club-listing"); // student dashboard or club listing
           break;
