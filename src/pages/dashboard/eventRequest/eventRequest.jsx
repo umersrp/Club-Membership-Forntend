@@ -42,21 +42,20 @@ const EventRequestListing = () => {
     },
     { Header: "Student Name", accessor: "studentName" },
     { Header: "Student ID", accessor: "studentId" },
-    { Header: "Club Name", accessor: "clubName" },
-    { Header: "Club Category", accessor: "clubCategory" },
-    { Header: "Motivation", accessor: "motivation" },
+    { Header: "Event Name", accessor: "eventTitle" },
+    { Header: "Event Category", accessor: "eventCategory" },
+    // { Header: "Motivation", accessor: "motivation" },
     {
       Header: "Status",
       accessor: "status",
       Cell: ({ value }) => (
         <span
-          className={`capitalize px-2 py-1 rounded text-xs font-medium ${
-            value === "pending"
-              ? "bg-yellow-100 text-yellow-800"
-              : value === "approved"
+          className={`capitalize px-2 py-1 rounded text-xs font-medium ${value === "pending"
+            ? "bg-yellow-100 text-yellow-800"
+            : value === "approved"
               ? "bg-green-100 text-green-800"
               : "bg-red-100 text-red-800"
-          }`}
+            }`}
         >
           {value}
         </span>
@@ -154,11 +153,17 @@ const EventRequestListing = () => {
         _id: item._id,
         studentName: item.userId?.name || "—",
         studentId: item.userId?.studentId || "—",
-        clubName: item.clubId?.clubName || "—",
-        clubCategory: item.clubId?.clubCategory || "—",
+
+        // ADD THESE
+        eventTitle: item.eventId?.eventTitle || "—",
+        eventCategory: item.eventId?.eventCategory || "—",
+
+
+
         motivation: item.motivation || "—",
         status: item.status || "pending",
       }));
+
 
       setRecords(mapped);
       setPageCount(1); // You can adjust this if backend sends pagination info
@@ -214,7 +219,7 @@ const EventRequestListing = () => {
   return (
     <Card noborder>
       <div className="md:flex pb-6 items-center">
-        <h6 className="flex-1 md:mb-0">Club Joining Requests</h6>
+        <h6 className="flex-1 md:mb-0">Event Requests</h6>
         <div className="md:flex md:space-x-3 items-center flex-none rtl:space-x-reverse">
           <GlobalFilter
             filter={globalFilterValue}

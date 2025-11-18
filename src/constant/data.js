@@ -1,26 +1,26 @@
 export const clubLeaderMenu = [
-   {
+  {
     title: "Leader Board",
     icon: "heroicons:calendar-days",
     link: "leader-board",
   },
-   {
+  {
     title: "New Club ",
     icon: "heroicons:square-2-stack",
     link: "new-club-listing",
   },
-    {
+  {
     title: "Events",
     icon: "heroicons:calendar-days",
     link: "event-listing",
   },
-  
+
   {
     title: "ClubRequest",
     icon: "heroicons:calendar-days",
     link: "club-request-listing",
   },
-   {
+  {
     title: "EventRequest",
     icon: "heroicons:calendar-days",
     link: "event-request-listing",
@@ -28,6 +28,13 @@ export const clubLeaderMenu = [
 ];
 
 export const studentMenu = [
+  {
+
+    title: "Student Board",
+    icon: "heroicons:identification",
+    link: "Student-Board",
+  },
+
   {
     title: "Club Listing",
     icon: "heroicons:identification",
@@ -51,7 +58,7 @@ export const menuItems = [
   //   icon: "heroicons:academic-cap",
   //   link: "student-listing",
   // },
-   {
+  {
     title: "Leader Board",
     icon: "heroicons:calendar-days",
     link: "leader-board",
@@ -61,13 +68,13 @@ export const menuItems = [
     icon: "heroicons:square-2-stack",
     link: "new-club-listing",
   },
-  
-   {
+
+  {
     title: "Club Leader",
     icon: "heroicons:user-group",
     link: "club-leader-listing",
   },
-    {
+  {
     title: "Student",
     icon: "heroicons:academic-cap",
     link: "student-listing",
@@ -77,7 +84,7 @@ export const menuItems = [
   //   icon: "heroicons:document-arrow-down",
   //   link: "club-application-listing",
   // },
-  
+
   //  {
   //   title: "Club Listing", 
   //   icon: "heroicons:identification",

@@ -146,6 +146,7 @@ import ClubDetail from "./pages/dashboard/clubListing/[id]/club-detail";
 import LeaderBoard from "./pages/dashboard/leaderBoard/leaderBoard";
 import EventSurveyForm from "./pages/dashboard/eventRegistration/[id]/event-survey-form";
 import EventRequestListing from "./pages/dashboard/eventRequest/eventRequest";
+import StudentDashboard from "./pages/dashboard/StudentDashboad";
 
 
 
@@ -172,7 +173,7 @@ function App() {
           <Route path="student-form/:id" element={<StudentFormPage />} />
           <Route path="student-listing" element={<StudentListing />} />
 
-          <Route path="club-leader-listing" element={<ClubLeaderListing />} />         
+          <Route path="club-leader-listing" element={<ClubLeaderListing />} />
           <Route path="club-leader-form/:id" element={<ClubLeaderFormPage />} />
           <Route path="club-leader-form/add" element={<ClubLeaderFormPage />} />
 
@@ -181,25 +182,27 @@ function App() {
           <Route path="new-club-form/add" element={<NewClubForm />} />
 
           <Route path="event-listing" element={<EventListing />} />
-          <Route path="event-form/:id" element={<EventsForm/>} />
-          <Route path="event-form/add" element={<EventsForm/>} />
-          <Route path="event-request-listing" element={<EventRequestListing/>} />
+          <Route path="event-form/:id" element={<EventsForm />} />
+          <Route path="event-form/add" element={<EventsForm />} />
+          <Route path="event-request-listing" element={<EventRequestListing />} />
 
-          <Route path="club-application-listing" element={<ClubApplicationListing/>} />
-          <Route path="club-application-form/:id" element={<ClubApplicationForm/>} />
-          <Route path="club-application-form/add" element={<ClubApplicationForm/>} />
+          <Route path="club-application-listing" element={<ClubApplicationListing />} />
+          <Route path="club-application-form/:id" element={<ClubApplicationForm />} />
+          <Route path="club-application-form/add" element={<ClubApplicationForm />} />
 
           <Route path="event-registration-listing" element={<EventRegistrationListing />} />
-          <Route path="event-registration-form/:id" element={<EventRegistrationForm/>} />
-          <Route path="event-registration-form/add" element={<EventRegistrationForm/>} />
-          <Route path="event-survey-form/:id" element={<EventSurveyForm/>} />
+          <Route path="event-registration-form/:id" element={<EventRegistrationForm />} />
+          <Route path="event-registration-form/add" element={<EventRegistrationForm />} />
+          <Route path="event-survey-form/:id" element={<EventSurveyForm />} />
 
           <Route path="club-request-listing" element={<ClubRequestListing />} />
 
           <Route path="club-listing" element={<ClubListing />} />
-          <Route path="club-details/:id" element={<ClubDetail/>} />
+          <Route path="club-details/:id" element={<ClubDetail />} />
+          <Route path="Student-Board" element={<StudentDashboard />} />
 
-          <Route path="leader-board" element={<LeaderBoard/>} />
+
+          <Route path="leader-board" element={<LeaderBoard />} />
 
           <Route path="ecommerce" element={<Ecommerce />} />
           <Route path="crm" element={<CrmPage />} />
