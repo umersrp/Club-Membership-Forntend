@@ -31,6 +31,8 @@
     "d3-array": "^3.2.2",
     "dayjs": "^1.11.7",
     "framer-motion": "^10.12.12",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.3",
     "leaflet": "^1.9.3",
     "localforage": "^1.10.0",
     "match-sorter": "^6.3.1",

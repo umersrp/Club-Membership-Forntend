@@ -164,46 +164,46 @@ const StudentListing = () => {
       accessor: "interests",
       Cell: ({ value }) => (value && value.length > 0 ? value.join(", ") : "-"),
     },
-    {
-      Header: "Actions",
-      accessor: "_id",
-      Cell: ({ cell }) => (
-        <div className="flex space-x-3 rtl:space-x-reverse">
-          <Tippy content="View">
-            <button
-              className="action-btn"
-              onClick={() =>
-                navigate(`/student-view/${cell.value}`, {
-                  state: { mode: "view" },
-                })
-              }
-            >
-              <Icon className="text-green-600" icon="heroicons:eye" />
-            </button>
-          </Tippy>
-          <Tippy content="Edit">
-            <button
-              className="action-btn"
-              onClick={() =>
-                navigate(`/student-edit/${cell.value}`, {
-                  state: { mode: "edit" },
-                })
-              }
-            >
-              <Icon className="text-blue-600" icon="heroicons:pencil-square" />
-            </button>
-          </Tippy>
-          <Tippy >
-            <button
-              className="action-btn"
-              onClick={() => confirmDelete(cell.value)}
-            >
-              <Icon className="text-red-700" icon="heroicons:trash" />
-            </button>
-          </Tippy>
-        </div>
-      ),
-    },
+    // {
+    //   Header: "Actions",
+    //   accessor: "_id",
+    //   Cell: ({ cell }) => (
+    //     <div className="flex space-x-3 rtl:space-x-reverse">
+    //       <Tippy content="View">
+    //         <button
+    //           className="action-btn"
+    //           onClick={() =>
+    //             navigate(`/student-view/${cell.value}`, {
+    //               state: { mode: "view" },
+    //             })
+    //           }
+    //         >
+    //           <Icon className="text-green-600" icon="heroicons:eye" />
+    //         </button>
+    //       </Tippy>
+    //       <Tippy content="Edit">
+    //         <button
+    //           className="action-btn"
+    //           onClick={() =>
+    //             navigate(`/student-edit/${cell.value}`, {
+    //               state: { mode: "edit" },
+    //             })
+    //           }
+    //         >
+    //           <Icon className="text-blue-600" icon="heroicons:pencil-square" />
+    //         </button>
+    //       </Tippy>
+    //       <Tippy content="Delete">
+    //         <button
+    //           className="action-btn"
+    //           onClick={() => confirmDelete(cell.value)}
+    //         >
+    //           <Icon className="text-red-700" icon="heroicons:trash" />
+    //         </button>
+    //       </Tippy>
+    //     </div>
+    //   ),
+    // },
   ];
 
   const columns = useMemo(() => COLUMNS, [students]);

@@ -4,6 +4,7 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import axios from "axios";
 import Select from "@/components/ui/Select"; // Import React Select
+import { toast } from "react-toastify";
 
 const ClubLeaderForm = () => {
   const { id } = useParams();
@@ -42,7 +43,7 @@ const ClubLeaderForm = () => {
         }));
         setClubs(formattedClubs);
       } catch (err) {
-        console.error("Error fetching clubs:", err);
+        toast.error("Error fetching clubs:", err);
       }
     };
     fetchClubs();
@@ -62,45 +63,81 @@ const ClubLeaderForm = () => {
         }));
         setStudents(formattedStudents);
       } catch (err) {
-        console.error("Error fetching students:", err);
+        toast.error("Error fetching students:", err);
       }
     };
     fetchStudents();
   }, []);
 
   // fetch leader for view/edit
+  // useEffect(() => {
+  //   const fetchLeader = async () => {
+  //     if (!(isViewMode || isEditMode) || !id || id === "add") {
+  //       setLoading(false);
+  //       return;
+  //     }
+  //     try {
+  //       const token = localStorage.getItem("token");
+  //       const res = await axios.get(
+  //         `${process.env.REACT_APP_BASE_URL}/user/user/${id}`,
+  //         { headers: { Authorization: `${token}` } }
+  //       );
+  //       const leader = res.data.data || {};
+  //       setFormData({
+  //         studentId: leader.studentId || "",
+  //         club: leader.club || "",
+  //         role: leader.role || "",
+  //         customRole: leader.customRole || "",
+  //         effectiveDate: leader.effectiveDate
+  //           ? leader.effectiveDate.split("T")[0]
+  //           : "",
+  //         notes: leader.notes || "",
+  //       });
+  //     } catch (err) {
+  //       console.error("Error fetching leader:", err);
+  //       setMessage("Error loading leader data");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchLeader();
+  // }, [id, isViewMode, isEditMode]);
   useEffect(() => {
-    const fetchLeader = async () => {
-      if (!(isViewMode || isEditMode) || !id || id === "add") {
-        setLoading(false);
-        return;
-      }
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}/club-leaders/GetById/${id}`,
-          { headers: { Authorization: `${token}` } }
-        );
-        const leader = res.data.data || {};
-        setFormData({
-          studentId: leader.studentId || "",
-          club: leader.club || "",
-          role: leader.role || "",
-          customRole: leader.customRole || "",
-          effectiveDate: leader.effectiveDate
-            ? leader.effectiveDate.split("T")[0]
-            : "",
-          notes: leader.notes || "",
-        });
-      } catch (err) {
-        console.error("Error fetching leader:", err);
-        setMessage("Error loading leader data");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchLeader();
-  }, [id, isViewMode, isEditMode]);
+  const fetchLeader = async () => {
+    if (!(isViewMode || isEditMode) || !id || id === "add") {
+      setLoading(false);
+      return;
+    }
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/user/user/${id}`,
+        { headers: { Authorization: `${token}` } }
+      );
+      const leader = res.data.data || {};
+
+      const clubLeadership = leader.clubLeadership?.[0] || {};
+
+      setFormData({
+        studentId: leader.studentId || "",
+        clubId: clubLeadership.clubId || "",
+        role: clubLeadership.role || "",
+        customRole: clubLeadership.customRoleName || "",
+        effectiveDate: clubLeadership.effectiveDate
+          ? clubLeadership.effectiveDate.split("T")[0]
+          : "",
+        notes: clubLeadership.notes || "",
+      });
+    } catch (err) {
+      console.error("Error fetching leader:", err);
+      setMessage("Error loading leader data");
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchLeader();
+}, [id, isViewMode, isEditMode]);
+
 
   const handleInputChange = (e) => {
     if (isViewMode) return;
@@ -126,13 +163,13 @@ const ClubLeaderForm = () => {
 
       if (isEditMode) {
         await axios.put(
-          `${process.env.REACT_APP_BASE_URL}/club-leaders/update/${id}`,
+          `${process.env.REACT_APP_BASE_URL}/user/admin-update/${id}`,
           formData,
           {
             headers: { "Content-Type": "application/json", Authorization: `${token}` },
           }
         );
-        setMessage("Club leader updated successfully!");
+        toast.success("Club leader updated successfully!");
       } else {
         await axios.post(
           `${process.env.REACT_APP_BASE_URL}/user/Create-ClubLeader`,
@@ -141,13 +178,13 @@ const ClubLeaderForm = () => {
             headers: { "Content-Type": "application/json", Authorization: `${token}` },
           }
         );
-        setMessage("Club leader created successfully!");
+        toast.success("Club leader created successfully!");
       }
 
       setTimeout(() => navigate("/club-leader-listing"), 900);
     } catch (err) {
       console.error("Error saving club leader:", err);
-      setMessage(err.response?.data?.message || "Error saving club leader");
+      toast.success(err.response?.data?.message || "Error saving club leader");
     }
   };
 
