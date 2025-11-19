@@ -35,76 +35,169 @@ const ClubLeaderListing = () => {
   const [selectedLeaderId, setSelectedLeaderId] = useState(null);
 
   //  Define Table Columns
+  // const COLUMNS = [
+  //   {
+  //     Header: "Sr No",
+  //     Cell: ({ row }) => <span>{row.index + 1}</span>,
+  //   },
+  //   { Header: "Student ID", accessor: "studentId" },
+  //   {
+  //     Header: "Club ID",
+  //     accessor: (row) => row.clubLeadership?.clubId?.clubName || "-",
+  //   },
+  //   {
+  //     Header: "Role",
+  //     accessor: (row) => row.clubLeadership?.role || "-",
+  //   },
+  //   {
+  //     Header: "Custom Role",
+  //     accessor: (row) => row.clubLeadership?.customRoleName || "-",
+  //   },
+  //   {
+  //     Header: "Effective Date",
+  //     accessor: (row) =>
+  //       row.clubLeadership?.effectiveDate
+  //         ? new Date(row.clubLeadership.effectiveDate).toLocaleDateString()
+  //         : "-",
+  //   },
+  //   {
+  //     Header: "Notes",
+  //     accessor: (row) => row.clubLeadership?.notes || "-",
+  //   },
+  //   {
+  //     Header: "Actions",
+  //     accessor: "_id",
+  //     Cell: ({ cell }) => (
+  //       <div className="flex space-x-3 rtl:space-x-reverse">
+  //         <Tippy content="view" >
+  //           <button
+  //             className="action-btn"
+  //             onClick={() =>
+  //               navigate(`/club-leader-form/${cell.value}`, {
+  //                 state: { mode: "view" },
+  //               })
+  //             }
+  //           >
+  //             <Icon className="text-green-600" icon="heroicons:eye" />
+  //           </button>
+  //         </Tippy>
+  //         <Tippy content="Edit" >
+  //           <button
+  //             className="action-btn"
+  //             onClick={() =>
+  //               navigate(`/club-leader-form/${cell.value}`, {
+  //                 state: { mode: "edit" },
+  //               })
+  //             }
+  //           >
+  //             <Icon className="text-blue-600" icon="heroicons:pencil-square" />
+  //           </button>
+  //         </Tippy>
+  //         <Tippy content="Delete">
+  //           <button
+  //             className="action-btn"
+  //             onClick={() => confirmDelete(cell.value)}
+  //           >
+  //             <Icon className="text-red-700" icon="heroicons:trash" />
+  //           </button>
+  //         </Tippy>
+  //       </div>
+  //     ),
+  //   },
+  // ];
   const COLUMNS = [
-    {
-      Header: "Sr No",
-      Cell: ({ row }) => <span>{row.index + 1}</span>,
-    },
-    { Header: "Student ID", accessor: "studentId" },
-    {
-      Header: "Club ID",
-      accessor: (row) => row.clubLeadership?.clubId?.clubName || "-",
-    },
-    {
-      Header: "Role",
-      accessor: (row) => row.clubLeadership?.role || "-",
-    },
-    {
-      Header: "Custom Role",
-      accessor: (row) => row.clubLeadership?.customRoleName || "-",
-    },
-    {
-      Header: "Effective Date",
-      accessor: (row) =>
-        row.clubLeadership?.effectiveDate
-          ? new Date(row.clubLeadership.effectiveDate).toLocaleDateString()
-          : "-",
-    },
-    {
-      Header: "Notes",
-      accessor: (row) => row.clubLeadership?.notes || "-",
-    },
-    {
-      Header: "Actions",
-      accessor: "_id",
-      Cell: ({ cell }) => (
-        <div className="flex space-x-3 rtl:space-x-reverse">
-          <Tippy >
-            <button
-              className="action-btn"
-              onClick={() =>
-                navigate(`/club-leader-form/${cell.value}`, {
-                  state: { mode: "view" },
-                })
-              }
-            >
-              <Icon className="text-green-600" icon="heroicons:eye" />
-            </button>
-          </Tippy>
-          <Tippy >
-            <button
-              className="action-btn"
-              onClick={() =>
-                navigate(`/club-leader-form/${cell.value}`, {
-                  state: { mode: "edit" },
-                })
-              }
-            >
-              <Icon className="text-blue-600" icon="heroicons:pencil-square" />
-            </button>
-          </Tippy>
-          <Tippy >
-            <button
-              className="action-btn"
-              onClick={() => confirmDelete(cell.value)}
-            >
-              <Icon className="text-red-700" icon="heroicons:trash" />
-            </button>
-          </Tippy>
-        </div>
-      ),
-    },
-  ];
+  {
+    Header: "Sr No",
+    Cell: ({ row }) => <span>{row.index + 1}</span>,
+  },
+  { Header: "Student ID", accessor: "studentId" },
+
+  // ✅ Club Name from clubLeadership[0]
+  {
+    Header: "Club Name",
+    accessor: (row) =>
+      row.clubLeadership?.length > 0
+        ? row.clubLeadership[0].clubId?.clubName || "-"
+        : "-",
+  },
+
+  // ✅ Role
+  {
+    Header: "Role",
+    accessor: (row) =>
+      row.clubLeadership?.length > 0
+        ? row.clubLeadership[0].role || "-"
+        : "-",
+  },
+
+  // ✅ Custom Role
+  {
+    Header: "Custom Role",
+    accessor: (row) =>
+      row.clubLeadership?.length > 0
+        ? row.clubLeadership[0].customRoleName || "-"
+        : "-",
+  },
+
+  // ✅ Effective Date
+  {
+    Header: "Effective Date",
+    accessor: (row) =>
+      row.clubLeadership?.length > 0 &&
+      row.clubLeadership[0].effectiveDate
+        ? new Date(row.clubLeadership[0].effectiveDate).toLocaleDateString()
+        : "-",
+  },
+
+  // ✅ Notes
+  {
+    Header: "Notes",
+    accessor: (row) =>
+      row.clubLeadership?.length > 0
+        ? row.clubLeadership[0].notes || "-"
+        : "-",
+  },
+
+  // ✅ Actions
+  {
+    Header: "Actions",
+    accessor: "_id",
+    Cell: ({ cell }) => (
+      <div className="flex space-x-3 rtl:space-x-reverse">
+        <Tippy content="View" theme="light">
+          <button
+            onClick={() =>
+              navigate(`/club-leader-form/${cell.value}`, {
+                state: { mode: "view" },
+              })
+            }
+          >
+            <Icon className="text-green-600" icon="heroicons:eye" />
+          </button>
+        </Tippy>
+
+        <Tippy content="Edit" theme="light">
+          <button
+            onClick={() =>
+              navigate(`/club-leader-form/${cell.value}`, {
+                state: { mode: "edit" },
+              })
+            }
+          >
+            <Icon className="text-blue-600" icon="heroicons:pencil-square" />
+          </button>
+        </Tippy>
+
+        <Tippy content="Delete" theme="light">
+          <button onClick={() => confirmDelete(cell.value)}>
+            <Icon className="text-red-700" icon="heroicons:trash" />
+          </button>
+        </Tippy>
+      </div>
+    ),
+  },
+];
+
 
   const columns = useMemo(() => COLUMNS, []);
   const data = useMemo(() => records, [records]);

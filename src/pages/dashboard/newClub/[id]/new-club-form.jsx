@@ -31,26 +31,27 @@ const NewClubForm = () => {
     vicePresidentId: "",
     justification: "",
     expectedMembers: "",
+    members: [],
   });
 
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(isViewMode || isEditMode);
 
   useEffect(() => {
-  const fetchStudents = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}/user/getStudentByAdmin`,
-        { headers: { Authorization: `${token}` } }
-      );
-      setStudents(res.data.data || []);
-    } catch (err) {
-      console.error("Error fetching students:", err);
-    }
-  };
-  fetchStudents();
-}, []);
+    const fetchStudents = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}/user/getStudentByAdmin`,
+          { headers: { Authorization: `${token}` } }
+        );
+        setStudents(res.data.data || []);
+      } catch (err) {
+        console.error("Error fetching students:", err);
+      }
+    };
+    fetchStudents();
+  }, []);
 
   // Fetch existing club data for view/edit
   useEffect(() => {
@@ -81,6 +82,7 @@ const NewClubForm = () => {
           vicePresidentId: club.vicePresidentId || "",
           justification: club.justification || "",
           expectedMembers: club.expectedMembers || "",
+          members: club.members || [],
         });
       } catch (err) {
         console.error("Error fetching club:", err);
@@ -103,110 +105,110 @@ const NewClubForm = () => {
     setFormData((prev) => ({ ...prev, clubLogo: e.target.files[0] }));
   };
 
- 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (isViewMode) return;
 
-  if (!formData.clubName.trim())
-    return setMessage("Club Name is required");
-  if (!formData.clubDescription.trim())
-    return setMessage("Club Description is required");
-  if (!formData.clubCategory.trim())
-    return setMessage("Club Category is required");
-  if (!formData.presidentName.trim() || !formData.presidentId.trim())
-    return setMessage("President Name and ID are required");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (isViewMode) return;
 
-  try {
-    const token = localStorage.getItem("token");
+    if (!formData.clubName.trim())
+      return setMessage("Club Name is required");
+    if (!formData.clubDescription.trim())
+      return setMessage("Club Description is required");
+    if (!formData.clubCategory.trim())
+      return setMessage("Club Category is required");
+    if (!formData.presidentName.trim() || !formData.presidentId.trim())
+      return setMessage("President Name and ID are required");
 
-    //  Upload logo first (if provided)
-    let logoUrl = "";
-    if (formData.clubLogo) {
-      logoUrl = await handleFileUpload(); // keep this as your existing logic
-    }
+    try {
+      const token = localStorage.getItem("token");
 
-    //  Convert string fields to arrays if needed
-    const payload = {
-      ...formData,
-      targetMajor:
-        typeof formData.targetMajor === "string"
-          ? formData.targetMajor.split(",").map((s) => s.trim()).filter(Boolean)
-          : formData.targetMajor,
-
-      targetYear:
-        typeof formData.targetYear === "string"
-          ? formData.targetYear.split(",").map((s) => s.trim()).filter(Boolean)
-          : formData.targetYear,
-
-      proposedActivities:
-        typeof formData.proposedActivities === "string"
-          ? formData.proposedActivities.split(",").map((s) => s.trim()).filter(Boolean)
-          : formData.proposedActivities,
-
-      socialLinks:
-        typeof formData.socialLinks === "string"
-          ? formData.socialLinks.split(",").map((s) => s.trim()).filter(Boolean)
-          : formData.socialLinks,
-
-      clubLogo: logoUrl, //  use uploaded logo URL
-    };
-
-    const headers = {
-      "Content-Type": "application/json",
-      Authorization: `${token}`,
-    };
-
-    if (isEditMode) {
-      await axios.put(
-        `${process.env.REACT_APP_BASE_URL}/club/${id}`,
-        payload,
-        { headers }
-      );
-      setMessage("Club updated successfully!");
-    } else {
-      await axios.post(
-        `${process.env.REACT_APP_BASE_URL}/Club/Create`,
-        payload,
-        { headers }
-      );
-      setMessage("Club created successfully! Pending admin approval.");
-    }
-
-    setTimeout(() => navigate("/new-club-listing"), 900);
-  } catch (err) {
-    console.error("Error saving club:", err.response?.data || err);
-    setMessage("Error saving club");
-  }
-};
-//  Upload file to backend and return the file URL
-const handleFileUpload = async () => {
-  if (!formData.clubLogo) return ""; // No file selected
-
-  try {
-    const token = localStorage.getItem("token");
-    const formDataToSend = new FormData();
-    formDataToSend.append("documentFile", formData.clubLogo); // key = documentFile
-
-    const res = await axios.post(
-      `${process.env.REACT_APP_BASE_URL}/upload/upload`,
-      formDataToSend,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `${token}`,
-        },
+      //  Upload logo first (if provided)
+      let logoUrl = "";
+      if (formData.clubLogo) {
+        logoUrl = await handleFileUpload(); // keep this as your existing logic
       }
-    );
 
-    //  Correct way (your backend returns the URL in res.data.data)
-    return res.data?.data || "";
-  } catch (err) {
-    console.error("File upload failed:", err);
-    setMessage("Error uploading logo");
-    return "";
-  }
-};
+      //  Convert string fields to arrays if needed
+      const payload = {
+        ...formData,
+        targetMajor:
+          typeof formData.targetMajor === "string"
+            ? formData.targetMajor.split(",").map((s) => s.trim()).filter(Boolean)
+            : formData.targetMajor,
+
+        targetYear:
+          typeof formData.targetYear === "string"
+            ? formData.targetYear.split(",").map((s) => s.trim()).filter(Boolean)
+            : formData.targetYear,
+
+        proposedActivities:
+          typeof formData.proposedActivities === "string"
+            ? formData.proposedActivities.split(",").map((s) => s.trim()).filter(Boolean)
+            : formData.proposedActivities,
+
+        socialLinks:
+          typeof formData.socialLinks === "string"
+            ? formData.socialLinks.split(",").map((s) => s.trim()).filter(Boolean)
+            : formData.socialLinks,
+
+        clubLogo: logoUrl, //  use uploaded logo URL
+      };
+
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `${token}`,
+      };
+
+      if (isEditMode) {
+        await axios.put(
+          `${process.env.REACT_APP_BASE_URL}/club/${id}`,
+          payload,
+          { headers }
+        );
+        setMessage("Club updated successfully!");
+      } else {
+        await axios.post(
+          `${process.env.REACT_APP_BASE_URL}/Club/Create`,
+          payload,
+          { headers }
+        );
+        setMessage("Club created successfully! Pending admin approval.");
+      }
+
+      setTimeout(() => navigate("/new-club-listing"), 900);
+    } catch (err) {
+      console.error("Error saving club:", err.response?.data || err);
+      setMessage("Error saving club");
+    }
+  };
+  //  Upload file to backend and return the file URL
+  const handleFileUpload = async () => {
+    if (!formData.clubLogo) return ""; // No file selected
+
+    try {
+      const token = localStorage.getItem("token");
+      const formDataToSend = new FormData();
+      formDataToSend.append("documentFile", formData.clubLogo); // key = documentFile
+
+      const res = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}/upload/upload`,
+        formDataToSend,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `${token}`,
+          },
+        }
+      );
+
+      //  Correct way (your backend returns the URL in res.data.data)
+      return res.data?.data || "";
+    } catch (err) {
+      console.error("File upload failed:", err);
+      setMessage("Error uploading logo");
+      return "";
+    }
+  };
 
 
 
@@ -367,30 +369,30 @@ const handleFileUpload = async () => {
                 readOnly={isViewMode}
               />
             </div>
-           <div>
-  <label className="block mb-1 text-sm font-medium">President</label>
-  <select
-    name="presidentId"
-    value={formData.presidentId}
-    onChange={(e) => {
-      const selectedStudent = students.find((s) => s._id === e.target.value);
-      setFormData((prev) => ({
-        ...prev,
-        presidentId: selectedStudent?._id || "",
-        presidentName: selectedStudent?.name || "",
-      }));
-    }}
-    className="border p-2 w-full rounded"
-    disabled={isViewMode}
-  >
-    <option value="">Select President</option>
-    {students.map((student) => (
-      <option key={student._id} value={student._id}>
-        {student.name} ({student.studentId})
-      </option>
-    ))}
-  </select>
-</div>
+            <div>
+              <label className="block mb-1 text-sm font-medium">President</label>
+              <select
+                name="presidentId"
+                value={formData.presidentId}
+                onChange={(e) => {
+                  const selectedStudent = students.find((s) => s._id === e.target.value);
+                  setFormData((prev) => ({
+                    ...prev,
+                    presidentId: selectedStudent?._id || "",
+                    presidentName: selectedStudent?.name || "",
+                  }));
+                }}
+                className="border p-2 w-full rounded"
+                disabled={isViewMode}
+              >
+                <option value="">Select President</option>
+                {students.map((student) => (
+                  <option key={student._id} value={student._id}>
+                    {student.name} ({student.studentId})
+                  </option>
+                ))}
+              </select>
+            </div>
 
             <div>
               <label className="block mb-1 text-sm font-medium">Vice President Name</label>
@@ -402,30 +404,30 @@ const handleFileUpload = async () => {
                 readOnly={isViewMode}
               />
             </div>
-           <div>
-  <label className="block mb-1 text-sm font-medium">Vice President</label>
-  <select
-    name="vicePresidentId"
-    value={formData.vicePresidentId}
-    onChange={(e) => {
-      const selectedStudent = students.find((s) => s._id === e.target.value);
-      setFormData((prev) => ({
-        ...prev,
-        vicePresidentId: selectedStudent?._id || "",
-        vicePresidentName: selectedStudent?.name || "",
-      }));
-    }}
-    className="border p-2 w-full rounded"
-    disabled={isViewMode}
-  >
-    <option value="">Select Vice President</option>
-    {students.map((student) => (
-      <option key={student._id} value={student._id}>
-        {student.name} ({student.studentId})
-      </option>
-    ))}
-  </select>
-</div>
+            <div>
+              <label className="block mb-1 text-sm font-medium">Vice President</label>
+              <select
+                name="vicePresidentId"
+                value={formData.vicePresidentId}
+                onChange={(e) => {
+                  const selectedStudent = students.find((s) => s._id === e.target.value);
+                  setFormData((prev) => ({
+                    ...prev,
+                    vicePresidentId: selectedStudent?._id || "",
+                    vicePresidentName: selectedStudent?.name || "",
+                  }));
+                }}
+                className="border p-2 w-full rounded"
+                disabled={isViewMode}
+              >
+                <option value="">Select Vice President</option>
+                {students.map((student) => (
+                  <option key={student._id} value={student._id}>
+                    {student.name} ({student.studentId})
+                  </option>
+                ))}
+              </select>
+            </div>
 
 
             {/* Justification */}
@@ -458,6 +460,37 @@ const handleFileUpload = async () => {
               />
             </div>
           </div>
+
+          {isViewMode && formData.members?.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-3">Club Members</h3>
+
+              <div className="overflow-x-auto">
+                <table className="min-w-full border border-gray-300 rounded-lg">
+                  <thead className="bg-gray-200">
+                    <tr>
+                      <th className="p-3 text-left border">#</th>
+                      <th className="p-3 text-left border">Name</th>
+                      <th className="p-3 text-left border">Student ID</th>
+                      <th className="p-3 text-left border">Email</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {formData.members.map((m, index) => (
+                      <tr key={m._id} className="odd:bg-white even:bg-gray-50">
+                        <td className="p-3 border">{index + 1}</td>
+                        <td className="p-3 border font-medium">{m.name}</td>
+                        <td className="p-3 border">{m.studentId}</td>
+                        <td className="p-3 border text-sm text-gray-700">{m.email}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
 
           {/* Buttons */}
           <div className="flex justify-end gap-4 pt-6">

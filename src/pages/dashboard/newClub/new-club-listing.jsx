@@ -5,7 +5,6 @@ import Icon from "@/components/ui/Icon";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import Tippy from "@tippyjs/react";
 import {
   useTable,
   useRowSelect,
@@ -15,6 +14,9 @@ import {
 import GlobalFilter from "@/pages/table/react-tables/GlobalFilter";
 import Logo from "@/assets/images/logo/logo.png";
 import Modal from "@/components/ui/Modal";
+import Tippy from "@tippyjs/react";
+import 'tippy.js/dist/tippy.css';      
+import 'tippy.js/themes/light-border.css';   
 
 const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
   const defaultRef = React.useRef();
@@ -152,7 +154,7 @@ const NewClubListing = () => {
       Cell: ({ cell }) => (
         <div className="flex space-x-3">
           {/* View */}
-          <Tippy content="view" theme="light" >
+          <Tippy content="view"  >
             <button
               onClick={() =>
                 navigate(`/new-club-form/${cell.value}`, {
@@ -165,7 +167,7 @@ const NewClubListing = () => {
           </Tippy>
 
           {/*  Edit */}
-          <Tippy content="edit" theme="light">
+          <Tippy content="edit" >
             <button
               onClick={() =>
                 navigate(`/new-club-form/${cell.value}`, {
@@ -178,7 +180,7 @@ const NewClubListing = () => {
           </Tippy>
 
           {/*  Delete */}
-          <Tippy content="delete" theme="light" >
+          <Tippy content="delete"  >
             <button onClick={() => confirmDelete(cell.value)}>
               <Icon className="text-red-700" icon="heroicons:trash" />
             </button>

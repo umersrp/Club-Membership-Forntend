@@ -13,7 +13,9 @@ import {
 } from "react-table";
 import GlobalFilter from "../../table/react-tables/GlobalFilter";
 import Tippy from "@tippyjs/react";
-import 'tippy.js/themes/light.css';
+import 'tippy.js/dist/tippy.css';      
+import 'tippy.js/themes/light-border.css';   
+
 
 //  Checkbox utility
 const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
@@ -142,7 +144,7 @@ const EventListing = () => {
         Cell: ({ cell }) => (
           <div className="flex space-x-3">
             {/* View */}
-            <Tippy content="View" theme="light">
+            <Tippy content="View" >
               <button
                 onClick={() =>
                   navigate(`/event-form/${cell.value}`, {
@@ -155,7 +157,7 @@ const EventListing = () => {
             </Tippy>
 
             {/* Edit */}
-            <Tippy content="Edit" theme="light">
+            <Tippy content="Edit" >
               <button
                 onClick={() =>
                   navigate(`/event-form/${cell.value}`, {
@@ -168,7 +170,7 @@ const EventListing = () => {
             </Tippy>
 
             {/*  Delete */}
-            <Tippy content="Delete" theme="light">
+            <Tippy content="Delete" >
               <button onClick={() => confirmDelete(cell.value)}>
                 <Icon className="text-red-700" icon="heroicons:trash" />
               </button>

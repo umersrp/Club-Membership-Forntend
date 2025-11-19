@@ -147,6 +147,9 @@ import LeaderBoard from "./pages/dashboard/leaderBoard/leaderBoard";
 import EventSurveyForm from "./pages/dashboard/eventRegistration/[id]/event-survey-form";
 import EventRequestListing from "./pages/dashboard/eventRequest/eventRequest";
 import StudentDashboard from "./pages/dashboard/StudentDashboad";
+import EventDetail from "./pages/dashboard/eventRegistration/[id]/event-detail";
+import EventDetailPage from "./pages/dashboard/eventRegistration/[id]/event-detail";
+import EventCertificate from "./pages/dashboard/eventRegistration/[id]/event-certificate";
 
 
 
@@ -193,7 +196,9 @@ function App() {
           <Route path="event-registration-listing" element={<EventRegistrationListing />} />
           <Route path="event-registration-form/:id" element={<EventRegistrationForm />} />
           <Route path="event-registration-form/add" element={<EventRegistrationForm />} />
+           <Route path="event-details/:id" element={<EventDetailPage/>} />
           <Route path="event-survey-form/:id" element={<EventSurveyForm />} />
+          <Route path="event-certificate/:id" element={<EventCertificate />} />
 
           <Route path="club-request-listing" element={<ClubRequestListing />} />
 
