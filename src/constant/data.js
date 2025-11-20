@@ -1,5 +1,11 @@
 export const clubLeaderMenu = [
   {
+
+    title: "Dashboard",
+    icon: "heroicons:identification",
+    link: "Club-Leader-Board",
+  },
+  {
     title: "Leader Board",
     icon: "heroicons:calendar-days",
     link: "leader-board",
