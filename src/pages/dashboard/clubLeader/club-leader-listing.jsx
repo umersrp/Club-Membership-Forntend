@@ -110,9 +110,10 @@ const ClubLeaderListing = () => {
     Header: "Sr No",
     Cell: ({ row }) => <span>{row.index + 1}</span>,
   },
+   { Header: "Leader Name", accessor: "name" },
   { Header: "Student ID", accessor: "studentId" },
 
-  // ✅ Club Name from clubLeadership[0]
+  //  Club Name from clubLeadership[0]
   {
     Header: "Club Name",
     accessor: (row) =>
@@ -121,7 +122,7 @@ const ClubLeaderListing = () => {
         : "-",
   },
 
-  // ✅ Role
+  //  Role
   {
     Header: "Role",
     accessor: (row) =>
@@ -130,7 +131,7 @@ const ClubLeaderListing = () => {
         : "-",
   },
 
-  // ✅ Custom Role
+  //  Custom Role
   {
     Header: "Custom Role",
     accessor: (row) =>
@@ -139,7 +140,7 @@ const ClubLeaderListing = () => {
         : "-",
   },
 
-  // ✅ Effective Date
+  //  Effective Date
   {
     Header: "Effective Date",
     accessor: (row) =>
@@ -149,7 +150,7 @@ const ClubLeaderListing = () => {
         : "-",
   },
 
-  // ✅ Notes
+  //  Notes
   {
     Header: "Notes",
     accessor: (row) =>
@@ -158,7 +159,7 @@ const ClubLeaderListing = () => {
         : "-",
   },
 
-  // ✅ Actions
+  //  Actions
   {
     Header: "Actions",
     accessor: "_id",

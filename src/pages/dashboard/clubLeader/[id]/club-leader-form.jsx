@@ -50,24 +50,69 @@ const ClubLeaderForm = () => {
   }, []);
 
   // Fetch students for dropdown
+
+  // useEffect(() => {
+  //   const fetchStudents = async () => {
+  //     try {
+  //       const token = localStorage.getItem("token");
+  //       const res = await axios.get(
+  //         `${process.env.REACT_APP_BASE_URL}/user/getStudentByAdmin`,
+  //         { headers: { Authorization: `${token}` } }
+  //       );
+
+  //       const formattedStudents = (res.data.data || []).map((student) => ({
+  //         value: student.studentId,      // send studentId, not _id
+  //         label: student.name || "Unnamed Student", // show student name
+  //       }));
+
+  //       setStudents(formattedStudents);
+  //     } catch (err) {
+  //       toast.error("Error fetching students");
+  //     }
+  //   };
+  //   fetchStudents();
+  // }, []);
   useEffect(() => {
-    const fetchStudents = async () => {
+    const fetchPeople = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/user/getStudentByAdmin`, {
-          headers: { Authorization: `${token}` },
-        });
-        const formattedStudents = (res.data.data || []).map((student) => ({
-          value: student.studentId || student.id,
-          label: student.studentId || student.name || "Unnamed Student",
+
+        // fetch students
+        const studentsRes = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}/user/getStudentByAdmin`,
+          { headers: { Authorization: `${token}` } }
+        );
+
+        const studentsOptions = (studentsRes.data.data || []).map((s) => ({
+          value: s.studentId, // send studentId to backend
+          label: s.name || s.username || "Unnamed Student",
+          type: "student",
         }));
-        setStudents(formattedStudents);
+
+        // fetch club leaders
+        const leadersRes = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}/user/get-all-clubLeader`,
+          { headers: { Authorization: `${token}` } }
+        );
+
+        const leadersOptions = (leadersRes.data.data || []).map((l) => ({
+          value: l.studentId, // send studentId to backend
+          label: l.name || l.username || "Unnamed Leader",
+          type: "leader",
+        }));
+
+        setStudents([...studentsOptions, ...leadersOptions]);
       } catch (err) {
-        toast.error("Error fetching students:", err);
+        console.error(err);
+        toast.error("Error fetching people");
       }
     };
-    fetchStudents();
+
+    fetchPeople();
   }, []);
+
+
+
 
   // fetch leader for view/edit
   // useEffect(() => {
@@ -103,40 +148,40 @@ const ClubLeaderForm = () => {
   //   fetchLeader();
   // }, [id, isViewMode, isEditMode]);
   useEffect(() => {
-  const fetchLeader = async () => {
-    if (!(isViewMode || isEditMode) || !id || id === "add") {
-      setLoading(false);
-      return;
-    }
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}/user/user/${id}`,
-        { headers: { Authorization: `${token}` } }
-      );
-      const leader = res.data.data || {};
+    const fetchLeader = async () => {
+      if (!(isViewMode || isEditMode) || !id || id === "add") {
+        setLoading(false);
+        return;
+      }
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}/user/user/${id}`,
+          { headers: { Authorization: `${token}` } }
+        );
+        const leader = res.data.data || {};
 
-      const clubLeadership = leader.clubLeadership?.[0] || {};
+        const clubLeadership = leader.clubLeadership?.[0] || {};
 
-      setFormData({
-        studentId: leader.studentId || "",
-        clubId: clubLeadership.clubId || "",
-        role: clubLeadership.role || "",
-        customRole: clubLeadership.customRoleName || "",
-        effectiveDate: clubLeadership.effectiveDate
-          ? clubLeadership.effectiveDate.split("T")[0]
-          : "",
-        notes: clubLeadership.notes || "",
-      });
-    } catch (err) {
-      console.error("Error fetching leader:", err);
-      setMessage("Error loading leader data");
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchLeader();
-}, [id, isViewMode, isEditMode]);
+        setFormData({
+          studentId: leader.studentId || "",
+          clubId: clubLeadership.clubId || "",
+          role: clubLeadership.role || "",
+          customRole: clubLeadership.customRoleName || "",
+          effectiveDate: clubLeadership.effectiveDate
+            ? clubLeadership.effectiveDate.split("T")[0]
+            : "",
+          notes: clubLeadership.notes || "",
+        });
+      } catch (err) {
+        console.error("Error fetching leader:", err);
+        setMessage("Error loading leader data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLeader();
+  }, [id, isViewMode, isEditMode]);
 
 
   const handleInputChange = (e) => {
@@ -204,28 +249,17 @@ const ClubLeaderForm = () => {
               <label className="block text-sm font-medium mb-1">Student</label>
               <Select
                 name="studentId"
-                value={
-                  formData.studentId
-                    ? { label: formData.studentId, value: formData.studentId }
-                    : null
-                }
+                value={students.find((s) => s.value === formData.studentId) || null}
                 onChange={(selected) => {
-                  if (selected) {
-                    setFormData((prev) => ({
-                      ...prev,
-                      studentId: selected.value,
-                    }));
-                  } else {
-                    setFormData((prev) => ({
-                      ...prev,
-                      studentId: "",
-                    }));
-                  }
+                  setFormData((prev) => ({
+                    ...prev,
+                    studentId: selected?.value || "", // studentId always
+                  }));
                 }}
                 options={students}
                 allowCustomInput
                 isDisabled={isViewMode}
-                placeholder="Select or create student"
+                placeholder="Select Student or Club Leader"
               />
 
             </div>

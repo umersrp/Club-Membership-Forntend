@@ -150,6 +150,7 @@ import StudentDashboard from "./pages/dashboard/StudentDashboad";
 import EventDetail from "./pages/dashboard/eventRegistration/[id]/event-detail";
 import EventDetailPage from "./pages/dashboard/eventRegistration/[id]/event-detail";
 import EventCertificate from "./pages/dashboard/eventRegistration/[id]/event-certificate";
+import ClubLeaderDashboard from "./pages/dashboard/clubLeaderDashboard/club-leader-dashboard";
 
 
 
@@ -205,6 +206,7 @@ function App() {
           <Route path="club-listing" element={<ClubListing />} />
           <Route path="club-details/:id" element={<ClubDetail />} />
           <Route path="Student-Board" element={<StudentDashboard />} />
+          <Route path="Club-Leader-Board" element={<ClubLeaderDashboard/>} />
 
 
           <Route path="leader-board" element={<LeaderBoard />} />
