@@ -114,6 +114,33 @@ const NewClubListing = () => {
       Cell: ({ cell }) =>
         cell.value ? new Date(cell.value).toLocaleDateString() : "-",
     },
+    {
+      Header: "Status",
+      accessor: "status",
+      Cell: ({ cell }) => {
+        const status = cell.value || "Pending";
+
+        const getColor = (status) => {
+          switch (status) {
+            case "Approved":
+              return "bg-green-100 text-green-700 border border-green-300";
+            case "Rejected":
+              return "bg-red-100 text-red-700 border border-red-300";
+            default:
+              return "bg-yellow-100 text-yellow-700 border border-yellow-300";
+          }
+        };
+
+        return (
+          <span
+            className={`px-2 py-1 rounded text-sm font-medium ${getColor(status)}`}
+          >
+            {status}
+          </span>
+        );
+      },
+    },
+
     // {
     //   Header: "Actions",
     //   accessor: "_id",
@@ -183,6 +210,14 @@ const NewClubListing = () => {
               <Icon className="text-red-700" icon="heroicons:trash" />
             </button>
           </Tippy>
+          <button onClick={() => approveClub(cell.value)}>
+            <Icon className="text-green-700" icon="heroicons:check-circle" />
+          </button>
+
+          {/* Reject */}
+          <button onClick={() => rejectClub(cell.value)}>
+            <Icon className="text-red-600" icon="heroicons:x-circle" />
+          </button>
         </div>
       ),
     }
@@ -242,7 +277,7 @@ const NewClubListing = () => {
     setLoading(true);
     try {
       const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/club/get`, {
-        headers: { Authorization: `${localStorage.getItem("token")}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         params: { page: pageIndex + 1, limit: pageSize, search },
       });
 
@@ -253,7 +288,6 @@ const NewClubListing = () => {
       setPageCount(pagination.totalPages || 1);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to fetch records");
     } finally {
       setLoading(false);
     }
@@ -285,6 +319,55 @@ const NewClubListing = () => {
     setSelectedBuildingId(id);
     setDeleteModalOpen(true);
   };
+
+  const approveClub = async (id) => {
+    setLoading(true);
+
+    try {
+
+      const token = localStorage.getItem("token");
+
+      const res = await axios.put(
+        `${process.env.REACT_APP_BASE_URL}/club/${id}`,
+        { status: "Approved" },
+        { headers: { Authorization: `${localStorage.getItem("token")}` } }
+      );
+
+      toast.success("Club approved successfully");
+    } catch (err) {
+      console.error(err.response?.data?.message || "Error approving club");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const rejectClub = async (id) => {
+    const reason = prompt("Enter rejection reason:");
+
+    if (!reason) {
+      toast.error("Rejection reason is required");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await axios.put(
+        `${process.env.REACT_APP_BASE_URL}/club/${id}`,
+        {
+          status: "Rejected",
+          rejectionReason: reason,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success("Club rejected successfully");
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Error rejecting club");
+    }
+  };
+
 
   //  UI Render
   return (

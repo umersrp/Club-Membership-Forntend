@@ -34,7 +34,6 @@ export const studentMenu = [
     icon: "heroicons:identification",
     link: "Student-Board",
   },
-
   {
     title: "Club Listing",
     icon: "heroicons:identification",
