@@ -106,98 +106,121 @@ const ClubLeaderListing = () => {
   //   },
   // ];
   const COLUMNS = [
+    {
+      Header: "Sr No",
+      Cell: ({ row }) => <span>{row.index + 1}</span>,
+    },
+    { Header: "Leader Name", accessor: "name" },
+    { Header: "Student ID", accessor: "studentId" },
+
   {
-    Header: "Sr No",
-    Cell: ({ row }) => <span>{row.index + 1}</span>,
-  },
-   { Header: "Leader Name", accessor: "name" },
-  { Header: "Student ID", accessor: "studentId" },
+  Header: "Club Name",
+  accessor: (row) => row.clubLeadership?.clubId?.clubName || "-",
+},
+{
+  Header: "Role",
+  accessor: (row) => row.clubLeadership?.role || "-",
+},
+{
+  Header: "Custom Role",
+  accessor: (row) => row.clubLeadership?.customRoleName || "-",
+},
+{
+  Header: "Effective Date",
+  accessor: (row) =>
+    row.clubLeadership?.effectiveDate
+      ? new Date(row.clubLeadership.effectiveDate).toLocaleDateString()
+      : "-",
+},
+{
+  Header: "Notes",
+  accessor: (row) => row.clubLeadership?.notes || "-",
+},
 
-  //  Club Name from clubLeadership[0]
-  {
-    Header: "Club Name",
-    accessor: (row) =>
-      row.clubLeadership?.length > 0
-        ? row.clubLeadership[0].clubId?.clubName || "-"
-        : "-",
-  },
 
-  //  Role
-  {
-    Header: "Role",
-    accessor: (row) =>
-      row.clubLeadership?.length > 0
-        ? row.clubLeadership[0].role || "-"
-        : "-",
-  },
+    //  Actions
+    // {
+    //   Header: "Actions",
+    //   accessor: "_id",
+    //   Cell: ({ cell }) => (
+    //     <div className="flex space-x-3 rtl:space-x-reverse">
+    //       <Tippy content="View" theme="light">
+    //         <button
+    //           onClick={() =>
+    //             navigate(`/club-leader-form/${cell.value}`, {
+    //               state: { mode: "view" },
+    //             })
+    //           }
+    //         >
+    //           <Icon className="text-green-600" icon="heroicons:eye" />
+    //         </button>
+    //       </Tippy>
 
-  //  Custom Role
-  {
-    Header: "Custom Role",
-    accessor: (row) =>
-      row.clubLeadership?.length > 0
-        ? row.clubLeadership[0].customRoleName || "-"
-        : "-",
-  },
+    //       <Tippy content="Edit" theme="light">
+    //         <button
+    //           onClick={() =>
+    //             navigate(`/club-leader-form/${cell.value}`, {
+    //               state: { mode: "edit" },
+    //             })
+    //           }
+    //         >
+    //           <Icon className="text-blue-600" icon="heroicons:pencil-square" />
+    //         </button>
+    //       </Tippy>
 
-  //  Effective Date
-  {
-    Header: "Effective Date",
-    accessor: (row) =>
-      row.clubLeadership?.length > 0 &&
-      row.clubLeadership[0].effectiveDate
-        ? new Date(row.clubLeadership[0].effectiveDate).toLocaleDateString()
-        : "-",
-  },
+    //       <Tippy content="Delete" theme="light">
+    //         <button onClick={() => confirmDelete(cell.value)}>
+    //           <Icon className="text-red-700" icon="heroicons:trash" />
+    //         </button>
+    //       </Tippy>
+    //     </div>
+    //   ),
+    // },
+    // In ClubLeaderListing.jsx
+{
+  Header: "Actions",
+  accessor: "_id",
+  Cell: ({ row, cell }) => (
+    <div className="flex space-x-3 rtl:space-x-reverse">
+      <Tippy content="View" theme="light">
+        <button
+          onClick={() =>
+            navigate(`/club-leader-form/${cell.value}`, {
+              state: { 
+                mode: "view",
+                clubId: row.original.clubLeadership?.clubId?._id || row.original.clubLeadership?.clubId
+              },
+            })
+          }
+        >
+          <Icon className="text-green-600" icon="heroicons:eye" />
+        </button>
+      </Tippy>
 
-  //  Notes
-  {
-    Header: "Notes",
-    accessor: (row) =>
-      row.clubLeadership?.length > 0
-        ? row.clubLeadership[0].notes || "-"
-        : "-",
-  },
+      <Tippy content="Edit" theme="light">
+        <button
+          onClick={() =>
+            navigate(`/club-leader-form/${cell.value}`, {
+              state: { 
+                mode: "edit",
+                clubId: row.original.clubLeadership?.clubId?._id || row.original.clubLeadership?.clubId
+              },
+            })
+          }
+        >
+          <Icon className="text-blue-600" icon="heroicons:pencil-square" />
+        </button>
+      </Tippy>
 
-  //  Actions
-  {
-    Header: "Actions",
-    accessor: "_id",
-    Cell: ({ cell }) => (
-      <div className="flex space-x-3 rtl:space-x-reverse">
-        <Tippy content="View" theme="light">
-          <button
-            onClick={() =>
-              navigate(`/club-leader-form/${cell.value}`, {
-                state: { mode: "view" },
-              })
-            }
-          >
-            <Icon className="text-green-600" icon="heroicons:eye" />
-          </button>
-        </Tippy>
-
-        <Tippy content="Edit" theme="light">
-          <button
-            onClick={() =>
-              navigate(`/club-leader-form/${cell.value}`, {
-                state: { mode: "edit" },
-              })
-            }
-          >
-            <Icon className="text-blue-600" icon="heroicons:pencil-square" />
-          </button>
-        </Tippy>
-
-        <Tippy content="Delete" theme="light">
-          <button onClick={() => confirmDelete(cell.value)}>
-            <Icon className="text-red-700" icon="heroicons:trash" />
-          </button>
-        </Tippy>
-      </div>
-    ),
-  },
-];
+      <Tippy content="Delete" theme="light">
+        <button onClick={() => confirmDelete(cell.value)}>
+          <Icon className="text-red-700" icon="heroicons:trash" />
+        </button>
+      </Tippy>
+    </div>
+  ),
+},
+  ];
 
 
   const columns = useMemo(() => COLUMNS, []);
@@ -262,7 +285,29 @@ const ClubLeaderListing = () => {
       );
 
       const data = res.data?.data || [];
-      setRecords(data);
+      // setRecords(data);
+
+      const flattened = [];
+
+      data.forEach((leader) => {
+        if (leader.clubLeadership?.length > 0) {
+          leader.clubLeadership.forEach((club) => {
+            flattened.push({
+              ...leader,
+              clubLeadership: club, // single club object
+            });
+          });
+        } else {
+          // no club leadership
+          flattened.push({
+            ...leader,
+            clubLeadership: {},
+          });
+        }
+      });
+
+      setRecords(flattened);
+
       setPageCount(1); // Static since backend doesn't provide pagination
     } catch (err) {
       console.error(err);

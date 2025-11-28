@@ -15,8 +15,10 @@ import GlobalFilter from "@/pages/table/react-tables/GlobalFilter";
 import Logo from "@/assets/images/logo/logo.png";
 import Modal from "@/components/ui/Modal";
 import Tippy from "@tippyjs/react";
-import 'tippy.js/dist/tippy.css';      
-import 'tippy.js/themes/light-border.css';   
+import 'tippy.js/dist/tippy.css';
+import 'tippy.js/themes/light-border.css';
+import defaultImage from "@/assets/images/all-img/widget-bg-5.png";
+
 
 const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
   const defaultRef = React.useRef();
@@ -45,20 +47,21 @@ const NewClubListing = () => {
       accessor: "id",
       Cell: ({ row }) => <span>{row.index + 1}</span>,
     },
+
     {
-      Header: "Logo",
-      accessor: "clubLogo",
-      Cell: ({ cell }) =>
-        cell.value ? (
-          <img
-            src={cell.value}
-            alt="Club Logo"
-            className="w-12 h-12 rounded-full object-cover border"
-          />
-        ) : (
-          <span>-</span>
-        ),
-    },
+    Header: "Logo",
+    accessor: "clubLogo",
+    Cell: ({ cell }) => (
+      <img 
+        src={cell.value || defaultImage} 
+        alt="Club" 
+        className="w-12 h-12 rounded object-cover"
+        onError={(e) => {
+          e.target.src = defaultImage; // Fallback if image fails to load
+        }}
+      />
+    ),
+  },
     { Header: "Club Name", accessor: "clubName" },
     { Header: "Category", accessor: "clubCategory" },
     { Header: "Target Gender", accessor: "targetGender" },
@@ -142,86 +145,68 @@ const NewClubListing = () => {
         );
       },
     },
-
-    // {
-    //   Header: "Actions",
-    //   accessor: "_id",
-    //   Cell: ({ cell }) => (
-    //     <div className="flex space-x-3 rtl:space-x-reverse">
-    //       <Tippy content="View">
-    //         <button
-    //           className="action-btn"
-    //           onClick={() => navigate(`new-club-form/${cell.value}`)}
-    //         >
-    //           <Icon className="text-green-600" icon="heroicons:eye" />
-    //         </button>
-    //       </Tippy>
-    //       <Tippy content="Edit">
-    //         <button
-    //           className="action-btn"
-    //           onClick={() => navigate(`new-club-form/${cell.value}`)}
-    //         >
-    //           <Icon className="text-blue-600" icon="heroicons:pencil-square" />
-    //         </button>
-    //       </Tippy>
-    //       <Tippy content="Delete">
-    //         <button
-    //           className="action-btn"
-    //           onClick={() => confirmDelete(cell.value)}
-    //         >
-    //           <Icon className="text-red-700" icon="heroicons:trash" />
-    //         </button>
-    //       </Tippy>
-    //     </div>
-    //   ),
-    // },
     {
       Header: "Actions",
       accessor: "_id",
-      Cell: ({ cell }) => (
-        <div className="flex space-x-3">
-          {/* View */}
-          <Tippy content="view"  >
-            <button
-              onClick={() =>
-                navigate(`/new-club-form/${cell.value}`, {
-                  state: { mode: "view" },
-                })
-              }
-            >
-              <Icon className="text-green-600" icon="heroicons:eye" />
-            </button>
-          </Tippy>
+      Cell: ({ cell }) => {
+        // Get user role from localStorage
+        const userRole = localStorage.getItem("user-role");
 
-          {/*  Edit */}
-          <Tippy content="edit" >
-            <button
-              onClick={() =>
-                navigate(`/new-club-form/${cell.value}`, {
-                  state: { mode: "edit" },
-                })
-              }
-            >
-              <Icon className="text-blue-600" icon="heroicons:pencil-square" />
-            </button>
-          </Tippy>
+        return (
+          <div className="flex space-x-3">
+            {/* View */}
+            <Tippy content="view">
+              <button
+                onClick={() =>
+                  navigate(`/new-club-form/${cell.value}`, {
+                    state: { mode: "view" },
+                  })
+                }
+              >
+                <Icon className="text-green-600" icon="heroicons:eye" />
+              </button>
+            </Tippy>
 
-          {/*  Delete */}
-          <Tippy content="delete"  >
-            <button onClick={() => confirmDelete(cell.value)}>
-              <Icon className="text-red-700" icon="heroicons:trash" />
-            </button>
-          </Tippy>
-          <button onClick={() => approveClub(cell.value)}>
-            <Icon className="text-green-700" icon="heroicons:check-circle" />
-          </button>
+            {/* Edit */}
+            <Tippy content="edit">
+              <button
+                onClick={() =>
+                  navigate(`/new-club-form/${cell.value}`, {
+                    state: { mode: "edit" },
+                  })
+                }
+              >
+                <Icon className="text-blue-600" icon="heroicons:pencil-square" />
+              </button>
+            </Tippy>
 
-          {/* Reject */}
-          <button onClick={() => rejectClub(cell.value)}>
-            <Icon className="text-red-600" icon="heroicons:x-circle" />
-          </button>
-        </div>
-      ),
+            {/* Delete */}
+            <Tippy content="delete">
+              <button onClick={() => confirmDelete(cell.value)}>
+                <Icon className="text-red-700" icon="heroicons:trash" />
+              </button>
+            </Tippy>
+
+            {/* Approve - Only show for Admin */}
+            {userRole === "admin" && (
+              <Tippy content="approve">
+                <button onClick={() => approveClub(cell.value)}>
+                  <Icon className="text-green-700" icon="heroicons:check-circle" />
+                </button>
+              </Tippy>
+            )}
+
+            {/* Reject - Only show for Admin */}
+            {userRole === "admin" && (
+              <Tippy content="reject">
+                <button onClick={() => rejectClub(cell.value)}>
+                  <Icon className="text-red-600" icon="heroicons:x-circle" />
+                </button>
+              </Tippy>
+            )}
+          </div>
+        );
+      },
     }
 
   ];
@@ -279,7 +264,7 @@ const NewClubListing = () => {
     setLoading(true);
     try {
       const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/club/get`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        headers: { Authorization: `${localStorage.getItem("token")}` },
         params: { page: pageIndex + 1, limit: pageSize, search },
       });
 
@@ -306,7 +291,7 @@ const NewClubListing = () => {
   //  Delete Function
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${process.env.REACT_APP_BASE_URL}/club/delete/${id}`, {
+      await axios.delete(`${process.env.REACT_APP_BASE_URL}/club/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       toast.success("Record deleted successfully");

@@ -85,7 +85,7 @@ const EventRegistrationForm = ({ event, onClose }) => {
       );
 
       toast.success("Registration successful!");
-      setMessage("You have successfully registered for this event!");
+      toast.success("You have successfully registered for this event!");
       setTimeout(() => onClose(), 1500);
     } catch (error) {
       console.error("Error submitting registration:", error);
@@ -119,7 +119,7 @@ const EventRegistrationForm = ({ event, onClose }) => {
 
             <div>
               <label className="block text-sm font-medium mb-1">
-                Dietary Restrictions
+                Why You Want to Joint?
               </label>
               <input
                 type="text"
@@ -131,7 +131,7 @@ const EventRegistrationForm = ({ event, onClose }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">T-Shirt Size</label>
+              <label className="block text-sm font-medium mb-1">Major</label>
               <input
                 type="text"
                 name="eventQuestions.tshirtSize"

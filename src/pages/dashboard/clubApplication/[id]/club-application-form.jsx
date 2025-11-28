@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
+import { toast } from "react-toastify";
 
 const ClubApplicationForm = ({ club, mode = "add", id, onClose }) => {
   const isViewMode = mode === "view";
@@ -43,7 +44,7 @@ const ClubApplicationForm = ({ club, mode = "add", id, onClose }) => {
         });
       } catch (err) {
         console.error("Error fetching application:", err);
-        setMessage("Error loading application data");
+        toast.error("Error loading application data");
       } finally {
         setLoading(false);
       }
@@ -62,9 +63,9 @@ const handleSubmit = async (e) => {
   e.preventDefault();
   if (isViewMode) return;
 
-  if (!formData.motivation.trim()) return setMessage("Motivation is required");
-  if (!formData.contribution.trim()) return setMessage("Expected contribution is required");
-  if (!formData.availability.trim()) return setMessage("Availability (hours/week) is required");
+  if (!formData.motivation.trim()) return toast.error("Motivation is required");
+  if (!formData.contribution.trim()) return toast.error("Expected contribution is required");
+  if (!formData.availability.trim()) return toast.error("Availability (hours/week) is required");
 
   try {
     const token = localStorage.getItem("token");
@@ -78,7 +79,7 @@ const handleSubmit = async (e) => {
           headers: { "Content-Type": "application/json", Authorization: `${token}` },
         }
       );
-      setMessage("Application updated successfully!");
+      toast.success("Application updated successfully!");
     } else {
       //  Include clubLeaderId and clubId when submitting
       await axios.post(
@@ -94,13 +95,13 @@ const handleSubmit = async (e) => {
           headers: { "Content-Type": "application/json", Authorization: `${token}` },
         }
       );
-      setMessage("Application submitted successfully!");
+      toast.success("Application submitted successfully!");
     }
 
     setTimeout(() => onClose(), 900);
   } catch (err) {
     console.error("Error saving application:", err);
-    setMessage("Error saving application");
+    toast.error("Error saving application");
   }
 };
 

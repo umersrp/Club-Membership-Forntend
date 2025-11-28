@@ -3,6 +3,15 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import axios from "axios";
+import CustomSelect from "@/components/ui/Select";
+import { toast } from "react-toastify";
+
+const targetAudienceOptions = [
+  { value: "Open to all", label: "Open to all" },
+  { value: "Club members only", label: "Club members only" },
+  { value: "Specific major", label: "Specific major" },
+];
+
 
 const EventForm = () => {
   const { id } = useParams();
@@ -30,7 +39,7 @@ const EventForm = () => {
     additionalRequirements: "",
     certificateOffered: false,
     volunteerHoursAwarded: "",
-    members: [] ,
+    members: [],
   });
 
   const [message, setMessage] = useState("");
@@ -72,12 +81,12 @@ const EventForm = () => {
           additionalRequirements: event.additionalRequirements || "",
           certificateOffered: event.certificateOffered || false,
           volunteerHoursAwarded: event.volunteerHoursAwarded || "",
-          members: event.members || [] ,
+          members: event.members || [],
         });
         setUploadedImageUrl(event.eventImage || "");
       } catch (err) {
         console.error("Error fetching event:", err);
-        setMessage("Error loading event data");
+        toast.error("Error loading event data");
       } finally {
         setLoading(false);
       }
@@ -126,10 +135,10 @@ const EventForm = () => {
         const url = res.data.data;
         setUploadedImageUrl(url);
         setFormData((prev) => ({ ...prev, eventImage: url }));
-        setMessage("Image uploaded successfully!");
+        toast.success("Image uploaded successfully!");
       } catch (err) {
         console.error("Image upload failed:", err);
-        setMessage("Image upload failed");
+        toast.success("Image upload failed");
       } finally {
         setUploading(false);
       }
@@ -150,7 +159,7 @@ const EventForm = () => {
     if (isViewMode) return;
 
     if (!formData.eventTitle.trim())
-      return setMessage("Event title is required");
+      return toast.error("Event title is required");
 
     try {
       const token = localStorage.getItem("token");
@@ -188,7 +197,7 @@ const EventForm = () => {
             },
           }
         );
-        setMessage("Event updated successfully!");
+        toast.success("Event updated successfully!");
       } else {
         await axios.post(`${process.env.REACT_APP_BASE_URL}/event/create`, payload, {
           headers: {
@@ -196,13 +205,13 @@ const EventForm = () => {
             Authorization: `${token}`,
           },
         });
-        setMessage("Event created successfully!");
+        toast.success("Event created successfully!");
       }
 
       setTimeout(() => navigate("/event-listing"), 900);
     } catch (err) {
       console.error("Error saving event:", err);
-      setMessage("Error saving event");
+      toast.error("Error saving event");
     }
   };
 
@@ -351,15 +360,32 @@ const EventForm = () => {
           {/* Target Audience */}
           <div>
             <label className="block text-sm font-medium mb-1">Target Audience</label>
-            <input
+            {/* <input
               type="text"
               name="targetAudience"
               value={formData.targetAudience}
               onChange={handleInputChange}
               className="border p-2 w-full rounded"
               readOnly={isViewMode}
-            />
+            /> */}
+            <CustomSelect
+            name="targetAudience"
+            options={targetAudienceOptions}
+            value={targetAudienceOptions.find(
+              (opt) => opt.value === formData.targetAudience
+            )}
+            onChange={(selectedOption) =>
+              setFormData({
+                ...formData,
+                targetAudience: selectedOption.value,
+              })
+            }
+            isDisabled={isViewMode}
+            className="w-full"
+          />
           </div>
+          
+
 
           {/* Specific Major */}
           <div>

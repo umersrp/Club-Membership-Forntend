@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const ClubDetail = () => {
   const { id } = useParams();
@@ -22,7 +23,7 @@ const ClubDetail = () => {
         setClub(res.data.data);
       } catch (err) {
         console.error("Error fetching club:", err);
-        setMessage("Error loading club details");
+        toast.error("Error loading club details");
       } finally {
         setLoading(false);
       }

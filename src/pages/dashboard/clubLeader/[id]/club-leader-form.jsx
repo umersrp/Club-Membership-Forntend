@@ -49,29 +49,6 @@ const ClubLeaderForm = () => {
     fetchClubs();
   }, []);
 
-  // Fetch students for dropdown
-
-  // useEffect(() => {
-  //   const fetchStudents = async () => {
-  //     try {
-  //       const token = localStorage.getItem("token");
-  //       const res = await axios.get(
-  //         `${process.env.REACT_APP_BASE_URL}/user/getStudentByAdmin`,
-  //         { headers: { Authorization: `${token}` } }
-  //       );
-
-  //       const formattedStudents = (res.data.data || []).map((student) => ({
-  //         value: student.studentId,      // send studentId, not _id
-  //         label: student.name || "Unnamed Student", // show student name
-  //       }));
-
-  //       setStudents(formattedStudents);
-  //     } catch (err) {
-  //       toast.error("Error fetching students");
-  //     }
-  //   };
-  //   fetchStudents();
-  // }, []);
   useEffect(() => {
     const fetchPeople = async () => {
       try {
@@ -112,9 +89,6 @@ const ClubLeaderForm = () => {
   }, []);
 
 
-
-
-  // fetch leader for view/edit
   // useEffect(() => {
   //   const fetchLeader = async () => {
   //     if (!(isViewMode || isEditMode) || !id || id === "add") {
@@ -128,15 +102,18 @@ const ClubLeaderForm = () => {
   //         { headers: { Authorization: `${token}` } }
   //       );
   //       const leader = res.data.data || {};
+
+  //       const clubLeadership = leader.clubLeadership?.[0] || {};
+
   //       setFormData({
   //         studentId: leader.studentId || "",
-  //         club: leader.club || "",
-  //         role: leader.role || "",
-  //         customRole: leader.customRole || "",
-  //         effectiveDate: leader.effectiveDate
-  //           ? leader.effectiveDate.split("T")[0]
+  //         clubId: clubLeadership.clubId || "",
+  //         role: clubLeadership.role || "",
+  //         customRole: clubLeadership.customRoleName || "",
+  //         effectiveDate: clubLeadership.effectiveDate
+  //           ? clubLeadership.effectiveDate.split("T")[0]
   //           : "",
-  //         notes: leader.notes || "",
+  //         notes: clubLeadership.notes || "",
   //       });
   //     } catch (err) {
   //       console.error("Error fetching leader:", err);
@@ -147,43 +124,54 @@ const ClubLeaderForm = () => {
   //   };
   //   fetchLeader();
   // }, [id, isViewMode, isEditMode]);
-  useEffect(() => {
-    const fetchLeader = async () => {
-      if (!(isViewMode || isEditMode) || !id || id === "add") {
-        setLoading(false);
-        return;
+
+// In ClubLeaderForm.jsx
+useEffect(() => {
+  const fetchLeader = async () => {
+    if (!(isViewMode || isEditMode) || !id || id === "add") {
+      setLoading(false);
+      return;
+    }
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/user/user/${id}`,
+        { headers: { Authorization: `${token}` } }
+      );
+      const leader = res.data.data || {};
+
+      // Get the clubId from navigation state
+      const targetClubId = location.state?.clubId;
+
+      // Find the specific club leadership entry
+      let clubLeadership = {};
+      if (targetClubId && leader.clubLeadership?.length > 0) {
+        clubLeadership = leader.clubLeadership.find(
+          (cl) => (cl.clubId?._id || cl.clubId) === targetClubId
+        ) || leader.clubLeadership[0];
+      } else {
+        clubLeadership = leader.clubLeadership?.[0] || {};
       }
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}/user/user/${id}`,
-          { headers: { Authorization: `${token}` } }
-        );
-        const leader = res.data.data || {};
 
-        const clubLeadership = leader.clubLeadership?.[0] || {};
-
-        setFormData({
-          studentId: leader.studentId || "",
-          clubId: clubLeadership.clubId || "",
-          role: clubLeadership.role || "",
-          customRole: clubLeadership.customRoleName || "",
-          effectiveDate: clubLeadership.effectiveDate
-            ? clubLeadership.effectiveDate.split("T")[0]
-            : "",
-          notes: clubLeadership.notes || "",
-        });
-      } catch (err) {
-        console.error("Error fetching leader:", err);
-        setMessage("Error loading leader data");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchLeader();
-  }, [id, isViewMode, isEditMode]);
-
-
+      setFormData({
+        studentId: leader.studentId || "",
+        clubId: clubLeadership.clubId?._id || clubLeadership.clubId || "",
+        role: clubLeadership.role || "",
+        customRole: clubLeadership.customRoleName || "",
+        effectiveDate: clubLeadership.effectiveDate
+          ? clubLeadership.effectiveDate.split("T")[0]
+          : "",
+        notes: clubLeadership.notes || "",
+      });
+    } catch (err) {
+      console.error("Error fetching leader:", err);
+      toast.error("Error loading leader data");
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchLeader();
+}, [id, isViewMode, isEditMode, location.state?.clubId]);
   const handleInputChange = (e) => {
     if (isViewMode) return;
     const { name, value } = e.target;
@@ -196,12 +184,12 @@ const ClubLeaderForm = () => {
     if (isViewMode) return;
 
     // Basic validation
-    if (!formData.studentId) return setMessage("Student ID is required");
-    if (!formData.clubId) return setMessage("Club is required");
-    if (!formData.role) return setMessage("Role is required");
-    if (!formData.effectiveDate) return setMessage("Effective Date is required");
+    if (!formData.studentId) return toast.error("Student ID is required");
+    if (!formData.clubId) return toast.error("Club is required");
+    if (!formData.role) return toast.error("Role is required");
+    if (!formData.effectiveDate) return toast.error("Effective Date is required");
     if (formData.role === "Other" && !formData.customRole.trim())
-      return setMessage("Custom role required when role is 'Other'");
+      return toast.error("Custom role required when role is 'Other'");
 
     try {
       const token = localStorage.getItem("token");
