@@ -4,6 +4,7 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Fileinput from "@/components/ui/Fileinput";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const NewClubForm = () => {
   const { id } = useParams();
@@ -47,7 +48,7 @@ const NewClubForm = () => {
         );
         setStudents(res.data.data || []);
       } catch (err) {
-        console.error("Error fetching students:", err);
+        toast.error("Error fetching students:", err);
       }
     };
     fetchStudents();
@@ -86,7 +87,7 @@ const NewClubForm = () => {
         });
       } catch (err) {
         console.error("Error fetching club:", err);
-        setMessage("Error loading club data");
+        toast.error("Error loading club data");
       } finally {
         setLoading(false);
       }
@@ -111,13 +112,13 @@ const NewClubForm = () => {
     if (isViewMode) return;
 
     if (!formData.clubName.trim())
-      return setMessage("Club Name is required");
+      return toast.error("Club Name is required");
     if (!formData.clubDescription.trim())
-      return setMessage("Club Description is required");
+      return toast.error("Club Description is required");
     if (!formData.clubCategory.trim())
-      return setMessage("Club Category is required");
+      return toast.error("Club Category is required");
     if (!formData.presidentName.trim() || !formData.presidentId.trim())
-      return setMessage("President Name and ID are required");
+      return toast.error("President Name and ID are required");
 
     try {
       const token = localStorage.getItem("token");
@@ -165,20 +166,20 @@ const NewClubForm = () => {
           payload,
           { headers }
         );
-        setMessage("Club updated successfully!");
+        toast.success("Club updated successfully!");
       } else {
         await axios.post(
           `${process.env.REACT_APP_BASE_URL}/Club/Create`,
           payload,
           { headers }
         );
-        setMessage("Club created successfully! Pending admin approval.");
+        toast.success("Club created successfully! Pending admin approval.");
       }
 
       setTimeout(() => navigate("/new-club-listing"), 900);
     } catch (err) {
       console.error("Error saving club:", err.response?.data || err);
-      setMessage("Error saving club");
+      toast.error("Error saving club");
     }
   };
   //  Upload file to backend and return the file URL
@@ -205,8 +206,28 @@ const NewClubForm = () => {
       return res.data?.data || "";
     } catch (err) {
       console.error("File upload failed:", err);
-      setMessage("Error uploading logo");
+      toast.error("Error uploading logo");
       return "";
+    }
+  };
+  const handleRemoveMember = async (memberId) => {
+    try {
+      await axios.put(
+        `${process.env.REACT_APP_BASE_URL}/Joining-requests/${memberId}`,
+        { status: "rejected" },
+        { headers: { Authorization: `${localStorage.getItem("token")}` } }
+      );
+
+      toast.success("Member removed successfully");
+
+      // Update UI without refresh
+      setFormData((prev) => ({
+        ...prev,
+        members: prev.members.filter((m) => m._id !== memberId),
+      }));
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to remove member");
     }
   };
 
@@ -360,16 +381,6 @@ const NewClubForm = () => {
 
             {/* Leadership */}
             <div>
-              <label className="block mb-1 text-sm font-medium">President Name</label>
-              <input
-                name="presidentName"
-                value={formData.presidentName}
-                onChange={handleChange}
-                className="border p-2 w-full rounded"
-                readOnly={isViewMode}
-              />
-            </div>
-            <div>
               <label className="block mb-1 text-sm font-medium">President</label>
               <select
                 name="presidentId"
@@ -393,17 +404,17 @@ const NewClubForm = () => {
                 ))}
               </select>
             </div>
-
             <div>
-              <label className="block mb-1 text-sm font-medium">Vice President Name</label>
+              <label className="block mb-1 text-sm font-medium">President Name</label>
               <input
-                name="vicePresidentName"
-                value={formData.vicePresidentName}
+                name="presidentName"
+                value={formData.presidentName}
                 onChange={handleChange}
                 className="border p-2 w-full rounded"
                 readOnly={isViewMode}
               />
             </div>
+
             <div>
               <label className="block mb-1 text-sm font-medium">Vice President</label>
               <select
@@ -428,6 +439,17 @@ const NewClubForm = () => {
                 ))}
               </select>
             </div>
+            <div>
+              <label className="block mb-1 text-sm font-medium">Vice President Name</label>
+              <input
+                name="vicePresidentName"
+                value={formData.vicePresidentName}
+                onChange={handleChange}
+                className="border p-2 w-full rounded"
+                readOnly={isViewMode}
+              />
+            </div>
+
 
 
             {/* Justification */}
@@ -461,7 +483,7 @@ const NewClubForm = () => {
             </div>
           </div>
 
-          {isViewMode && formData.members?.length > 0 && (
+          {(isViewMode || isEditMode) && formData.members?.length > 0 && (
             <div className="mt-6">
               <h3 className="text-lg font-semibold mb-3">Club Members</h3>
 
@@ -469,20 +491,36 @@ const NewClubForm = () => {
                 <table className="min-w-full border border-gray-300 rounded-lg">
                   <thead className="bg-gray-200">
                     <tr>
-                      <th className="p-3 text-left border">#</th>
+                      <th className="p-3 text-left border">Sr.No</th>
                       <th className="p-3 text-left border">Name</th>
                       <th className="p-3 text-left border">Student ID</th>
                       <th className="p-3 text-left border">Email</th>
+                      {isEditMode && <th className="p-3 text-left border">Action</th>}
                     </tr>
                   </thead>
 
                   <tbody>
                     {formData.members.map((m, index) => (
-                      <tr key={m._id} className="odd:bg-white even:bg-gray-50">
+                      <tr key={m._id || index} className="odd:bg-white even:bg-gray-50">
                         <td className="p-3 border">{index + 1}</td>
                         <td className="p-3 border font-medium">{m.name}</td>
                         <td className="p-3 border">{m.studentId}</td>
                         <td className="p-3 border text-sm text-gray-700">{m.email}</td>
+
+                        {isEditMode && (
+                          <td className="p-3 border">
+                            <button
+                              type="button"
+                              className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleRemoveMember(m._id);
+                              }}
+                            >
+                              Remove
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -490,6 +528,7 @@ const NewClubForm = () => {
               </div>
             </div>
           )}
+
 
 
           {/* Buttons */}

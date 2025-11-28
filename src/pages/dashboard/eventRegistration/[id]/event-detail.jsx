@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const EventDetailPage = () => {
   const { id } = useParams(); // get event id from URL
@@ -23,7 +24,7 @@ const EventDetailPage = () => {
         setEventData(Array.isArray(res.data.data) ? res.data.data[0] : res.data.data);
       } catch (err) {
         console.error("Error fetching event:", err);
-        setMessage("Error loading event details");
+        toast.error("Error loading event details");
       } finally {
         setLoading(false);
       }

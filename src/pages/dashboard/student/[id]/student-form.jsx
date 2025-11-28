@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const StudentFormPage = () => {
   const { id } = useParams();
@@ -49,10 +50,10 @@ const StudentFormPage = () => {
 
     // Validation
     if (!formData.universityEmail.endsWith("@student.ksu.edu.sa")) {
-      return setMessage("Email must be @student.ksu.edu.sa");
+      return toast.error("Email must be @student.ksu.edu.sa");
     }
     if (formData.password !== formData.confirmPassword) {
-      return setMessage("Passwords do not match");
+      return toast.error("Passwords do not match");
     }
 
     try {
@@ -63,20 +64,20 @@ const StudentFormPage = () => {
           formData,
           { headers: { Authorization: `${token}` } }
         );
-        setMessage("Student updated successfully!");
+        toast.success("Student updated successfully!");
       } else {
         await axios.post(
           `${process.env.REACT_APP_BASE_URL}/students`,
           formData,
           { headers: { Authorization: `${token}` } }
         );
-        setMessage("Student registered successfully!");
+        toast.success("Student registered successfully!");
       }
 
       setTimeout(() => navigate("/students-listing"), 1200);
     } catch (error) {
       console.error("Error saving student:", error);
-      setMessage("Error saving student");
+      toast.error("Error saving student");
     }
   };
 
