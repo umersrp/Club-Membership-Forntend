@@ -3,6 +3,7 @@ import axios from "axios";
 import Card from "@/components/ui/Card";
 import { FaUsers, FaClipboardList } from "react-icons/fa";
 import { toast } from "react-toastify";
+import DefaultImage from "@/assets/images/all-img/widget-bg-5.png";
 
 const ClubLeaderDashboard = () => {
     const [clubs, setClubs] = useState([]);
@@ -31,15 +32,12 @@ const ClubLeaderDashboard = () => {
             setLoading(false);
         }
     };
-
     return (
         <Card>
             <div className="p-6 space-y-6">
                 <h1 className="text-3xl font-bold mb-6">Club Leader Dashboard</h1>
-
                 {/* Top Stats */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-
                     {/* Club Leader Name */}
                     <div className="bg-gradient-to-r from-purple-400 to-purple-600 text-white p-6 rounded-xl shadow-lg flex items-center space-x-4">
                         <FaClipboardList className="text-4xl opacity-80" />
@@ -92,7 +90,7 @@ const ClubLeaderDashboard = () => {
 
                                             <td className="py-2 px-4">
                                                 <img
-                                                    src={club.clubLogo}
+                                                    src={club.clubLogo || DefaultImage}
                                                     alt={club.clubName}
                                                     className="h-10 w-10 rounded object-cover"
                                                 />

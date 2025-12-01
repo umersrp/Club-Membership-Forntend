@@ -62,15 +62,15 @@ const LoginForm = () => {
       const userRole = data.user.type;
       switch (userRole) {
         case UserRole.ADMIN:
-          navigate("/new-club-listing"); // your admin page
+          navigate("/leader-board"); // your admin page
           break;
 
         case UserRole.STUDENT:
-          navigate("/club-listing"); // student dashboard or club listing
+          navigate("/Student-Board"); // student dashboard or club listing
           break;
 
         case UserRole.CLUB_LEADER:
-          navigate("/leader-board"); // club leader page
+          navigate("/Club-Leader-Board"); // club leader page
           break;
 
         default:
