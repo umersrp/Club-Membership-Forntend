@@ -13,11 +13,13 @@ import {
 } from "react-table";
 import GlobalFilter from "../../table/react-tables/GlobalFilter";
 import Tippy from "@tippyjs/react";
-import 'tippy.js/dist/tippy.css';      
-import 'tippy.js/themes/light-border.css';   
+import "tippy.js/dist/tippy.css";
+import "tippy.js/themes/light-border.css";
+import { toast } from "react-toastify";
+import DefaultImage from "@/assets/images/all-img/widget-bg-5.png";
 
 
-//  Checkbox utility
+// Checkbox utility
 const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
   const defaultRef = React.useRef();
   const resolvedRef = ref || defaultRef;
@@ -30,50 +32,19 @@ const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref)
 const EventListing = () => {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
-  const [page, setPage] = useState(1);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
-  const [limit] = useState(10);
   const [loading, setLoading] = useState(true);
 
-  const actions = [
-    { name: "view", icon: "heroicons-outline:eye" },
-    { name: "edit", icon: "heroicons:pencil-square" },
-    { name: "delete", icon: "heroicons-outline:trash" },
-  ];
-
-  //  Handle action buttons
-  const handleAction = async (action, row) => {
-    if (action === "edit")
-      navigate(`/event-form/${row._id}`, { state: { mode: "edit" } });
-
-    if (action === "view")
-      navigate(`/event-form/${row._id}`, { state: { mode: "view" } });
-
-    if (action === "delete") {
-      try {
-        const token = localStorage.getItem("token");
-        await axios.delete(`${process.env.REACT_APP_BASE_URL}/event/delete/${row._id}`, {
-          headers: { Authorization: `${token}` },
-        });
-        setEvents((prev) => prev.filter((e) => e._id !== row._id));
-      } catch (error) {
-        console.error("Error deleting event:", error);
-      }
-    }
-  };
-
-  //  Fetch all events from backend
+  // Fetch events
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/event/get`, {
-          headers: { Authorization: `${token}` },
+          headers: { Authorization: token },
         });
-
         const allEvents = res.data.data || [];
 
-        // Optional: Format data (dateTime, registrationDeadline)
         const formatted = allEvents.map((e) => ({
           ...e,
           dateTime: e.dateTime ? new Date(e.dateTime).toLocaleString() : "-",
@@ -96,27 +67,23 @@ const EventListing = () => {
     fetchEvents();
   }, []);
 
-  //  Table Columns
+  // Table Columns
   const COLUMNS = useMemo(
     () => [
       {
         Header: "S.No",
         id: "serialNo",
-        Cell: (row) => row.row.index + 1 + (page - 1) * limit,
+        Cell: ({ row }) => row.index + 1,
       },
       {
         Header: "Event Image",
         accessor: "eventImage",
         Cell: ({ value }) =>
-          value ? (
             <img
-              src={value}
+              src={value || DefaultImage}
               alt="event"
               className="w-16 h-16 rounded object-cover"
-            />
-          ) : (
-            "—"
-          ),
+            />    
       },
       { Header: "Event Title", accessor: "eventTitle" },
       { Header: "Description", accessor: "eventDescription" },
@@ -137,54 +104,64 @@ const EventListing = () => {
       { Header: "Additional Requirements", accessor: "additionalRequirements" },
       { Header: "Certificate Offered", accessor: "certificateOffered" },
       { Header: "Volunteer Hours", accessor: "volunteerHoursAwarded" },
-
       {
         Header: "Actions",
         accessor: "_id",
         Cell: ({ cell }) => (
           <div className="flex space-x-3">
-            {/* View */}
-            <Tippy content="View" >
+            <Tippy content="View">
               <button
                 onClick={() =>
-                  navigate(`/event-form/${cell.value}`, {
-                    state: { mode: "view" },
-                  })
+                  navigate(`/event-form/${cell.value}`, { state: { mode: "view" } })
                 }
               >
                 <Icon className="text-green-600" icon="heroicons:eye" />
               </button>
             </Tippy>
-
-            {/* Edit */}
-            <Tippy content="Edit" >
+            <Tippy content="Edit">
               <button
                 onClick={() =>
-                  navigate(`/event-form/${cell.value}`, {
-                    state: { mode: "edit" },
-                  })
+                  navigate(`/event-form/${cell.value}`, { state: { mode: "edit" } })
                 }
               >
                 <Icon className="text-blue-600" icon="heroicons:pencil-square" />
               </button>
             </Tippy>
-
-            {/*  Delete */}
-            <Tippy content="Delete" >
-              <button onClick={() => confirmDelete(cell.value)}>
+            <Tippy content="Delete">
+              <button
+                onClick={() =>
+                  handleAction("delete", cell.row.original)
+                }
+              >
                 <Icon className="text-red-700" icon="heroicons:trash" />
               </button>
             </Tippy>
           </div>
         ),
-      }
-
+      },
     ],
-    [page, limit]
+    []
   );
 
+  // Handle delete
+  const handleAction = async (action, row) => {
+    if (action === "delete") {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.delete(`${process.env.REACT_APP_BASE_URL}/event/${row._id}`, {
+          headers: { Authorization: token },
+        });
+        setEvents((prev) => prev.filter((e) => e._id !== row._id));
+        toast.success("Event Deleted Successfully");
+      } catch (error) {
+        console.error("Error deleting event:", error);
+      }
+    }
+  };
+
+  // React Table instance with built-in pagination
   const tableInstance = useTable(
-    { columns: COLUMNS, data: events },
+    { columns: COLUMNS, data: events, initialState: { pageIndex: 0, pageSize: 10 } },
     useGlobalFilter,
     useSortBy,
     usePagination,
@@ -207,9 +184,16 @@ const EventListing = () => {
     getTableProps,
     getTableBodyProps,
     headerGroups,
-    page: tablePage,
+    page, // <- table rows for the current page
     prepareRow,
-    state,
+    canPreviousPage,
+    canNextPage,
+    nextPage,
+    previousPage,
+    pageOptions,
+    state: { pageIndex, pageSize },
+    setPageSize,
+    gotoPage,
   } = tableInstance;
 
   if (loading)
@@ -233,8 +217,8 @@ const EventListing = () => {
           </div>
         </div>
 
-        {/*  Table */}
-        <div className="overflow-x-auto -mx-6">
+          {/* table */}
+         <div className="overflow-x-auto -mx-6">
           <div className="inline-block min-w-full align-middle">
             <div className="overflow-hidden">
               <table
@@ -243,15 +227,9 @@ const EventListing = () => {
               >
                 <thead className="border-t border-slate-100 dark:border-slate-800">
                   {headerGroups.map((headerGroup) => (
-                    <tr
-                      {...headerGroup.getHeaderGroupProps()}
-                      className="bg-gradient-to-r from-[#18BB90] to-[#0C6B47]"
-                    >
+                    <tr {...headerGroup.getHeaderGroupProps()} className="bg-gradient-to-r from-[#18BB90] to-[#0C6B47]">
                       {headerGroup.headers.map((column) => (
-                        <th
-                          {...column.getHeaderProps(column.getSortByToggleProps())}
-                          className="table-th"
-                        >
+                        <th {...column.getHeaderProps(column.getSortByToggleProps())} className="table-th">
                           {column.render("Header")}
                         </th>
                       ))}
@@ -262,7 +240,7 @@ const EventListing = () => {
                   {...getTableBodyProps()}
                   className="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700"
                 >
-                  {tablePage.map((row) => {
+                  {page.map((row) => {
                     prepareRow(row);
                     return (
                       <tr {...row.getRowProps()}>
@@ -277,6 +255,37 @@ const EventListing = () => {
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="flex justify-between items-center mt-4">
+          <div>
+            Page{" "}
+            <input
+              type="number"
+              min={1}
+              max={pageOptions.length}
+              value={pageIndex + 1}
+              onChange={(e) => gotoPage(Number(e.target.value) - 1)}
+              className="border w-12 p-1 rounded text-center"
+            />{" "}
+            of {pageOptions.length}
+          </div>
+          <div className="flex items-center space-x-2">
+            <button onClick={previousPage} disabled={!canPreviousPage} className="px-2 py-1 border rounded disabled:opacity-50">Prev</button>
+            <button onClick={nextPage} disabled={!canNextPage} className="px-2 py-1 border rounded disabled:opacity-50 bg-primary-600 text-white">Next</button>
+            <select
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              className="border p-1 rounded"
+            >
+              {[5, 10, 25, 50].map((size) => (
+                <option key={size} value={size}>
+                  Show {size}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </Card>

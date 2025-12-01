@@ -210,29 +210,29 @@ const NewClubForm = () => {
       return "";
     }
   };
-  const handleRemoveMember = async (memberId) => {
-    try {
-      await axios.put(
-        `${process.env.REACT_APP_BASE_URL}/Joining-requests/${memberId}`,
-        { status: "rejected" },
-        { headers: { Authorization: `${localStorage.getItem("token")}` } }
-      );
+const handleRemoveMember = async (memberId) => {
+  try {
+    const token = localStorage.getItem("token");
 
-      toast.success("Member removed successfully");
+    await axios.delete(
+      `${process.env.REACT_APP_BASE_URL}/Joining-requests/delete-membership/${memberId}/${id}`,
+      {},
+      { headers: { Authorization: `${token}` } }
+    );
 
-      // Update UI without refresh
-      setFormData((prev) => ({
-        ...prev,
-        members: prev.members.filter((m) => m._id !== memberId),
-      }));
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to remove member");
-    }
-  };
+    toast.success("Member removed successfully");
 
+    // Update UI instantly
+    setFormData((prev) => ({
+      ...prev,
+      members: prev.members.filter((m) => m._id !== memberId),
+    }));
 
-
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to remove member");
+  }
+};
 
   if (loading) return <p>Loading club data...</p>;
 

@@ -154,6 +154,34 @@ const EventForm = () => {
     setFormData((prev) => ({ ...prev, [name]: value === "true" }));
   };
 
+const handleRemoveMember = async (memberId) => {
+  if (!id || !memberId) return;
+
+  try {
+    const token = localStorage.getItem("token");
+    await axios.delete(
+      `${process.env.REACT_APP_BASE_URL}/event/delete-membership/${memberId}/${id}`,
+      {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }
+    );
+
+    // Update local state to remove the member
+    setFormData((prev) => ({
+      ...prev,
+      members: prev.members.filter((m) => m._id !== memberId),
+    }));
+
+    toast.success("Member removed successfully!");
+  } catch (err) {
+    console.error("Error removing member:", err);
+    toast.error("Failed to remove member");
+  }
+};
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isViewMode) return;
@@ -188,7 +216,7 @@ const EventForm = () => {
 
       if (isEditMode) {
         await axios.put(
-          `${process.env.REACT_APP_BASE_URL}/event/update/${id}`,
+          `${process.env.REACT_APP_BASE_URL}/event/${id}`,
           payload,
           {
             headers: {
@@ -360,32 +388,22 @@ const EventForm = () => {
           {/* Target Audience */}
           <div>
             <label className="block text-sm font-medium mb-1">Target Audience</label>
-            {/* <input
-              type="text"
-              name="targetAudience"
-              value={formData.targetAudience}
-              onChange={handleInputChange}
-              className="border p-2 w-full rounded"
-              readOnly={isViewMode}
-            /> */}
             <CustomSelect
-            name="targetAudience"
-            options={targetAudienceOptions}
-            value={targetAudienceOptions.find(
-              (opt) => opt.value === formData.targetAudience
-            )}
-            onChange={(selectedOption) =>
-              setFormData({
-                ...formData,
-                targetAudience: selectedOption.value,
-              })
-            }
-            isDisabled={isViewMode}
-            className="w-full"
-          />
+              name="targetAudience"
+              options={targetAudienceOptions}
+              value={targetAudienceOptions.find(
+                (opt) => opt.value === formData.targetAudience
+              )}
+              onChange={(selectedOption) =>
+                setFormData({
+                  ...formData,
+                  targetAudience: selectedOption.value,
+                })
+              }
+              isDisabled={isViewMode}
+              className="w-full"
+            />
           </div>
-          
-
 
           {/* Specific Major */}
           <div>
@@ -480,7 +498,7 @@ const EventForm = () => {
             />
           </div>
         </form>
-        {isViewMode && formData.members?.length > 0 && (
+        {(isViewMode || isEditMode) && formData.members?.length > 0 && (
           <div className="mt-6">
             <h3 className="text-lg font-semibold mb-3">Club Members</h3>
 
@@ -502,9 +520,20 @@ const EventForm = () => {
                       <td className="p-3 border font-medium">{m.name}</td>
                       <td className="p-3 border">{m.studentId}</td>
                       <td className="p-3 border text-sm text-gray-700">{m.email}</td>
+                      {!isViewMode && (
+                        <td className="p-3 border">
+                          <button
+                            className="text-red-500 hover:underline"
+                            onClick={() => handleRemoveMember(m._id)}
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
+
               </table>
             </div>
           </div>

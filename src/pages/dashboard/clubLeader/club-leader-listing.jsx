@@ -1,3 +1,351 @@
+// import React, { useState, useEffect, useMemo } from "react";
+// import Card from "@/components/ui/Card";
+// import Button from "@/components/ui/Button";
+// import Icon from "@/components/ui/Icon";
+// import axios from "axios";
+// import { toast } from "react-toastify";
+// import { useNavigate } from "react-router-dom";
+// import Tippy from "@tippyjs/react";
+// import {
+//   useTable,
+//   useRowSelect,
+//   useSortBy,
+//   usePagination,
+// } from "react-table";
+// import GlobalFilter from "@/pages/table/react-tables/GlobalFilter";
+// import Logo from "@/assets/images/logo/logo.png";
+// import Modal from "@/components/ui/Modal";
+
+// const IndeterminateCheckbox = React.forwardRef(({ indeterminate, ...rest }, ref) => {
+//   const defaultRef = React.useRef();
+//   const resolvedRef = ref || defaultRef;
+//   React.useEffect(() => {
+//     resolvedRef.current.indeterminate = indeterminate;
+//   }, [resolvedRef, indeterminate]);
+//   return <input type="checkbox" ref={resolvedRef} {...rest} className="table-checkbox" />;
+// });
+
+// const ClubLeaderListing = () => {
+//   const navigate = useNavigate();
+//   const [records, setRecords] = useState([]);
+//   const [loading, setLoading] = useState(false);
+//   const [pageCount, setPageCount] = useState(0);
+//   const [globalFilterValue, setGlobalFilterValue] = useState("");
+//   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+//   const [selectedLeaderId, setSelectedLeaderId] = useState(null);
+
+//   //  Define Table Columns
+//   // const COLUMNS = [
+//   //   {
+//   //     Header: "Sr No",
+//   //     Cell: ({ row }) => <span>{row.index + 1}</span>,
+//   //   },
+//   //   { Header: "Student ID", accessor: "studentId" },
+//   //   {
+//   //     Header: "Club ID",
+//   //     accessor: (row) => row.clubLeadership?.clubId?.clubName || "-",
+//   //   },
+//   //   {
+//   //     Header: "Role",
+//   //     accessor: (row) => row.clubLeadership?.role || "-",
+//   //   },
+//   //   {
+//   //     Header: "Custom Role",
+//   //     accessor: (row) => row.clubLeadership?.customRoleName || "-",
+//   //   },
+//   //   {
+//   //     Header: "Effective Date",
+//   //     accessor: (row) =>
+//   //       row.clubLeadership?.effectiveDate
+//   //         ? new Date(row.clubLeadership.effectiveDate).toLocaleDateString()
+//   //         : "-",
+//   //   },
+//   //   {
+//   //     Header: "Notes",
+//   //     accessor: (row) => row.clubLeadership?.notes || "-",
+//   //   },
+//   //   {
+//   //     Header: "Actions",
+//   //     accessor: "_id",
+//   //     Cell: ({ cell }) => (
+//   //       <div className="flex space-x-3 rtl:space-x-reverse">
+//   //         <Tippy content="view" >
+//   //           <button
+//   //             className="action-btn"
+//   //             onClick={() =>
+//   //               navigate(`/club-leader-form/${cell.value}`, {
+//   //                 state: { mode: "view" },
+//   //               })
+//   //             }
+//   //           >
+//   //             <Icon className="text-green-600" icon="heroicons:eye" />
+//   //           </button>
+//   //         </Tippy>
+//   //         <Tippy content="Edit" >
+//   //           <button
+//   //             className="action-btn"
+//   //             onClick={() =>
+//   //               navigate(`/club-leader-form/${cell.value}`, {
+//   //                 state: { mode: "edit" },
+//   //               })
+//   //             }
+//   //           >
+//   //             <Icon className="text-blue-600" icon="heroicons:pencil-square" />
+//   //           </button>
+//   //         </Tippy>
+//   //         <Tippy content="Delete">
+//   //           <button
+//   //             className="action-btn"
+//   //             onClick={() => confirmDelete(cell.value)}
+//   //           >
+//   //             <Icon className="text-red-700" icon="heroicons:trash" />
+//   //           </button>
+//   //         </Tippy>
+//   //       </div>
+//   //     ),
+//   //   },
+//   // ];
+//   const COLUMNS = [
+//     {
+//       Header: "Sr No",
+//       Cell: ({ row }) => <span>{row.index + 1}</span>,
+//     },
+//     { Header: "Leader Name", accessor: "name" },
+//     { Header: "Student ID", accessor: "studentId" },
+
+//   {
+//   Header: "Club Name",
+//   accessor: (row) => row.clubLeadership?.clubId?.clubName || "-",
+// },
+// {
+//   Header: "Role",
+//   accessor: (row) => row.clubLeadership?.role || "-",
+// },
+// {
+//   Header: "Custom Role",
+//   accessor: (row) => row.clubLeadership?.customRoleName || "-",
+// },
+// {
+//   Header: "Effective Date",
+//   accessor: (row) =>
+//     row.clubLeadership?.effectiveDate
+//       ? new Date(row.clubLeadership.effectiveDate).toLocaleDateString()
+//       : "-",
+// },
+// {
+//   Header: "Notes",
+//   accessor: (row) => row.clubLeadership?.notes || "-",
+// },
+
+
+//     //  Actions
+//     // {
+//     //   Header: "Actions",
+//     //   accessor: "_id",
+//     //   Cell: ({ cell }) => (
+//     //     <div className="flex space-x-3 rtl:space-x-reverse">
+//     //       <Tippy content="View" theme="light">
+//     //         <button
+//     //           onClick={() =>
+//     //             navigate(`/club-leader-form/${cell.value}`, {
+//     //               state: { mode: "view" },
+//     //             })
+//     //           }
+//     //         >
+//     //           <Icon className="text-green-600" icon="heroicons:eye" />
+//     //         </button>
+//     //       </Tippy>
+
+//     //       <Tippy content="Edit" theme="light">
+//     //         <button
+//     //           onClick={() =>
+//     //             navigate(`/club-leader-form/${cell.value}`, {
+//     //               state: { mode: "edit" },
+//     //             })
+//     //           }
+//     //         >
+//     //           <Icon className="text-blue-600" icon="heroicons:pencil-square" />
+//     //         </button>
+//     //       </Tippy>
+
+//     //       <Tippy content="Delete" theme="light">
+//     //         <button onClick={() => confirmDelete(cell.value)}>
+//     //           <Icon className="text-red-700" icon="heroicons:trash" />
+//     //         </button>
+//     //       </Tippy>
+//     //     </div>
+//     //   ),
+//     // },
+//     // In ClubLeaderListing.jsx
+// {
+//   Header: "Actions",
+//   accessor: "_id",
+//   Cell: ({ row, cell }) => (
+//     <div className="flex space-x-3 rtl:space-x-reverse">
+//       <Tippy content="View" theme="light">
+//         <button
+//           onClick={() =>
+//             navigate(`/club-leader-form/${cell.value}`, {
+//               state: { 
+//                 mode: "view",
+//                 clubId: row.original.clubLeadership?.clubId?._id || row.original.clubLeadership?.clubId
+//               },
+//             })
+//           }
+//         >
+//           <Icon className="text-green-600" icon="heroicons:eye" />
+//         </button>
+//       </Tippy>
+
+//       <Tippy content="Edit" theme="light">
+//         <button
+//           onClick={() =>
+//             navigate(`/club-leader-form/${cell.value}`, {
+//               state: { 
+//                 mode: "edit",
+//                 clubId: row.original.clubLeadership?.clubId?._id || row.original.clubLeadership?.clubId
+//               },
+//             })
+//           }
+//         >
+//           <Icon className="text-blue-600" icon="heroicons:pencil-square" />
+//         </button>
+//       </Tippy>
+
+//       <Tippy content="Delete" theme="light">
+//         <button onClick={() => confirmDelete(cell.value)}>
+//           <Icon className="text-red-700" icon="heroicons:trash" />
+//         </button>
+//       </Tippy>
+//     </div>
+//   ),
+// },
+//   ];
+
+
+//   const columns = useMemo(() => COLUMNS, []);
+//   const data = useMemo(() => records, [records]);
+
+//   //  React Table Setup
+//   const tableInstance = useTable(
+//     {
+//       columns,
+//       data,
+//       manualPagination: true,
+//       pageCount,
+//       initialState: { pageIndex: 0, pageSize: 10 },
+//     },
+//     useSortBy,
+//     usePagination,
+//     useRowSelect,
+//     (hooks) => {
+//       hooks.visibleColumns.push((columns) => [
+//         {
+//           id: "selection",
+//           Header: ({ getToggleAllRowsSelectedProps }) => (
+//             <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
+//           ),
+//           Cell: ({ row }) => (
+//             <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
+//           ),
+//         },
+//         ...columns,
+//       ]);
+//     }
+//   );
+
+//   const {
+//     getTableProps,
+//     getTableBodyProps,
+//     headerGroups,
+//     page,
+//     prepareRow,
+//     nextPage,
+//     previousPage,
+//     canNextPage,
+//     canPreviousPage,
+//     pageOptions,
+//     gotoPage,
+//     state,
+//   } = tableInstance;
+
+//   const { pageIndex, pageSize } = state;
+
+//   //  Fetch Club Leaders Data
+//   const fetchClubLeaders = async (search = "") => {
+//     setLoading(true);
+//     try {
+//       const token = localStorage.getItem("token");
+//       const res = await axios.get(
+//         `${process.env.REACT_APP_BASE_URL}/user/get-all-clubLeader`,
+//         {
+//           headers: { Authorization: `${token}` },
+//           params: { page: pageIndex + 1, limit: pageSize, search },
+//         }
+//       );
+
+//       const data = res.data?.data || [];
+//       // setRecords(data);
+
+//       const flattened = [];
+
+//       data.forEach((leader) => {
+//         if (leader.clubLeadership?.length > 0) {
+//           leader.clubLeadership.forEach((club) => {
+//             flattened.push({
+//               ...leader,
+//               clubLeadership: club, // single club object
+//             });
+//           });
+//         } else {
+//           // no club leadership
+//           flattened.push({
+//             ...leader,
+//             clubLeadership: {},
+//           });
+//         }
+//       });
+
+//       setRecords(flattened);
+
+//       setPageCount(1); // Static since backend doesn't provide pagination
+//     } catch (err) {
+//       console.error(err);
+//       toast.error("Failed to fetch club leaders");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     const delay = setTimeout(() => {
+//       fetchClubLeaders(globalFilterValue);
+//     }, 400);
+//     return () => clearTimeout(delay);
+//   }, [globalFilterValue, pageIndex, pageSize]);
+
+//   //  Delete Leader
+//   const handleDelete = async (id) => {
+//     try {
+//       const token = localStorage.getItem("token");
+//       await axios.delete(
+//         `${process.env.REACT_APP_BASE_URL}/user/admin-remove/${id}`,
+//         { headers: { Authorization: `${token}` } }
+//       );
+//       toast.success("Club Leader deleted successfully");
+//       fetchClubLeaders();
+//     } catch (err) {
+//       console.error(err);
+//       toast.error("Failed to delete leader");
+//     }
+//   };
+
+//   const confirmDelete = (id) => {
+//     setSelectedLeaderId(id);
+//     setDeleteModalOpen(true);
+//   };
+
+
 import React, { useState, useEffect, useMemo } from "react";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
@@ -29,211 +377,76 @@ const ClubLeaderListing = () => {
   const navigate = useNavigate();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [pageCount, setPageCount] = useState(0);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedLeaderId, setSelectedLeaderId] = useState(null);
 
-  //  Define Table Columns
-  // const COLUMNS = [
-  //   {
-  //     Header: "Sr No",
-  //     Cell: ({ row }) => <span>{row.index + 1}</span>,
-  //   },
-  //   { Header: "Student ID", accessor: "studentId" },
-  //   {
-  //     Header: "Club ID",
-  //     accessor: (row) => row.clubLeadership?.clubId?.clubName || "-",
-  //   },
-  //   {
-  //     Header: "Role",
-  //     accessor: (row) => row.clubLeadership?.role || "-",
-  //   },
-  //   {
-  //     Header: "Custom Role",
-  //     accessor: (row) => row.clubLeadership?.customRoleName || "-",
-  //   },
-  //   {
-  //     Header: "Effective Date",
-  //     accessor: (row) =>
-  //       row.clubLeadership?.effectiveDate
-  //         ? new Date(row.clubLeadership.effectiveDate).toLocaleDateString()
-  //         : "-",
-  //   },
-  //   {
-  //     Header: "Notes",
-  //     accessor: (row) => row.clubLeadership?.notes || "-",
-  //   },
-  //   {
-  //     Header: "Actions",
-  //     accessor: "_id",
-  //     Cell: ({ cell }) => (
-  //       <div className="flex space-x-3 rtl:space-x-reverse">
-  //         <Tippy content="view" >
-  //           <button
-  //             className="action-btn"
-  //             onClick={() =>
-  //               navigate(`/club-leader-form/${cell.value}`, {
-  //                 state: { mode: "view" },
-  //               })
-  //             }
-  //           >
-  //             <Icon className="text-green-600" icon="heroicons:eye" />
-  //           </button>
-  //         </Tippy>
-  //         <Tippy content="Edit" >
-  //           <button
-  //             className="action-btn"
-  //             onClick={() =>
-  //               navigate(`/club-leader-form/${cell.value}`, {
-  //                 state: { mode: "edit" },
-  //               })
-  //             }
-  //           >
-  //             <Icon className="text-blue-600" icon="heroicons:pencil-square" />
-  //           </button>
-  //         </Tippy>
-  //         <Tippy content="Delete">
-  //           <button
-  //             className="action-btn"
-  //             onClick={() => confirmDelete(cell.value)}
-  //           >
-  //             <Icon className="text-red-700" icon="heroicons:trash" />
-  //           </button>
-  //         </Tippy>
-  //       </div>
-  //     ),
-  //   },
-  // ];
   const COLUMNS = [
-    {
-      Header: "Sr No",
-      Cell: ({ row }) => <span>{row.index + 1}</span>,
-    },
+    { Header: "Sr No", Cell: ({ row }) => <span>{row.index + 1}</span> },
     { Header: "Leader Name", accessor: "name" },
     { Header: "Student ID", accessor: "studentId" },
+    { Header: "Club Name", accessor: (row) => row.clubLeadership?.clubId?.clubName || "-" },
+    { Header: "Role", accessor: (row) => row.clubLeadership?.role || "-" },
+    { Header: "Custom Role", accessor: (row) => row.clubLeadership?.customRoleName || "-" },
+    { Header: "Effective Date", accessor: (row) =>
+        row.clubLeadership?.effectiveDate
+          ? new Date(row.clubLeadership.effectiveDate).toLocaleDateString()
+          : "-" 
+    },
+    { Header: "Notes", accessor: (row) => row.clubLeadership?.notes || "-" },
+    {
+      Header: "Actions",
+      accessor: "_id",
+      Cell: ({ row, cell }) => (
+        <div className="flex space-x-3 rtl:space-x-reverse">
+          <Tippy content="View" theme="light">
+            <button
+              onClick={() =>
+                navigate(`/club-leader-form/${cell.value}`, {
+                  state: { 
+                    mode: "view",
+                    clubId: row.original.clubLeadership?.clubId?._id || row.original.clubLeadership?.clubId
+                  },
+                })
+              }
+            >
+              <Icon className="text-green-600" icon="heroicons:eye" />
+            </button>
+          </Tippy>
 
-  {
-  Header: "Club Name",
-  accessor: (row) => row.clubLeadership?.clubId?.clubName || "-",
-},
-{
-  Header: "Role",
-  accessor: (row) => row.clubLeadership?.role || "-",
-},
-{
-  Header: "Custom Role",
-  accessor: (row) => row.clubLeadership?.customRoleName || "-",
-},
-{
-  Header: "Effective Date",
-  accessor: (row) =>
-    row.clubLeadership?.effectiveDate
-      ? new Date(row.clubLeadership.effectiveDate).toLocaleDateString()
-      : "-",
-},
-{
-  Header: "Notes",
-  accessor: (row) => row.clubLeadership?.notes || "-",
-},
+          <Tippy content="Edit" theme="light">
+            <button
+              onClick={() =>
+                navigate(`/club-leader-form/${cell.value}`, {
+                  state: { 
+                    mode: "edit",
+                    clubId: row.original.clubLeadership?.clubId?._id || row.original.clubLeadership?.clubId
+                  },
+                })
+              }
+            >
+              <Icon className="text-blue-600" icon="heroicons:pencil-square" />
+            </button>
+          </Tippy>
 
-
-    //  Actions
-    // {
-    //   Header: "Actions",
-    //   accessor: "_id",
-    //   Cell: ({ cell }) => (
-    //     <div className="flex space-x-3 rtl:space-x-reverse">
-    //       <Tippy content="View" theme="light">
-    //         <button
-    //           onClick={() =>
-    //             navigate(`/club-leader-form/${cell.value}`, {
-    //               state: { mode: "view" },
-    //             })
-    //           }
-    //         >
-    //           <Icon className="text-green-600" icon="heroicons:eye" />
-    //         </button>
-    //       </Tippy>
-
-    //       <Tippy content="Edit" theme="light">
-    //         <button
-    //           onClick={() =>
-    //             navigate(`/club-leader-form/${cell.value}`, {
-    //               state: { mode: "edit" },
-    //             })
-    //           }
-    //         >
-    //           <Icon className="text-blue-600" icon="heroicons:pencil-square" />
-    //         </button>
-    //       </Tippy>
-
-    //       <Tippy content="Delete" theme="light">
-    //         <button onClick={() => confirmDelete(cell.value)}>
-    //           <Icon className="text-red-700" icon="heroicons:trash" />
-    //         </button>
-    //       </Tippy>
-    //     </div>
-    //   ),
-    // },
-    // In ClubLeaderListing.jsx
-{
-  Header: "Actions",
-  accessor: "_id",
-  Cell: ({ row, cell }) => (
-    <div className="flex space-x-3 rtl:space-x-reverse">
-      <Tippy content="View" theme="light">
-        <button
-          onClick={() =>
-            navigate(`/club-leader-form/${cell.value}`, {
-              state: { 
-                mode: "view",
-                clubId: row.original.clubLeadership?.clubId?._id || row.original.clubLeadership?.clubId
-              },
-            })
-          }
-        >
-          <Icon className="text-green-600" icon="heroicons:eye" />
-        </button>
-      </Tippy>
-
-      <Tippy content="Edit" theme="light">
-        <button
-          onClick={() =>
-            navigate(`/club-leader-form/${cell.value}`, {
-              state: { 
-                mode: "edit",
-                clubId: row.original.clubLeadership?.clubId?._id || row.original.clubLeadership?.clubId
-              },
-            })
-          }
-        >
-          <Icon className="text-blue-600" icon="heroicons:pencil-square" />
-        </button>
-      </Tippy>
-
-      <Tippy content="Delete" theme="light">
-        <button onClick={() => confirmDelete(cell.value)}>
-          <Icon className="text-red-700" icon="heroicons:trash" />
-        </button>
-      </Tippy>
-    </div>
-  ),
-},
+          <Tippy content="Delete" theme="light">
+            <button onClick={() => confirmDelete(cell.value)}>
+              <Icon className="text-red-700" icon="heroicons:trash" />
+            </button>
+          </Tippy>
+        </div>
+      ),
+    },
   ];
-
 
   const columns = useMemo(() => COLUMNS, []);
   const data = useMemo(() => records, [records]);
 
-  //  React Table Setup
   const tableInstance = useTable(
     {
       columns,
       data,
-      manualPagination: true,
-      pageCount,
-      initialState: { pageIndex: 0, pageSize: 10 },
+      initialState: { pageIndex: 0, pageSize: 10 }, // client-side
     },
     useSortBy,
     usePagination,
@@ -245,9 +458,7 @@ const ClubLeaderListing = () => {
           Header: ({ getToggleAllRowsSelectedProps }) => (
             <IndeterminateCheckbox {...getToggleAllRowsSelectedProps()} />
           ),
-          Cell: ({ row }) => (
-            <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />
-          ),
+          Cell: ({ row }) => <IndeterminateCheckbox {...row.getToggleRowSelectedProps()} />,
         },
         ...columns,
       ]);
@@ -265,50 +476,36 @@ const ClubLeaderListing = () => {
     canNextPage,
     canPreviousPage,
     pageOptions,
-    gotoPage,
+    setPageSize,
     state,
   } = tableInstance;
 
   const { pageIndex, pageSize } = state;
 
-  //  Fetch Club Leaders Data
+  // Fetch all data once for client-side pagination
   const fetchClubLeaders = async (search = "") => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
         `${process.env.REACT_APP_BASE_URL}/user/get-all-clubLeader`,
-        {
-          headers: { Authorization: `${token}` },
-          params: { page: pageIndex + 1, limit: pageSize, search },
-        }
+        { headers: { Authorization: `${token}` } }
       );
 
       const data = res.data?.data || [];
-      // setRecords(data);
 
       const flattened = [];
-
       data.forEach((leader) => {
         if (leader.clubLeadership?.length > 0) {
           leader.clubLeadership.forEach((club) => {
-            flattened.push({
-              ...leader,
-              clubLeadership: club, // single club object
-            });
+            flattened.push({ ...leader, clubLeadership: club });
           });
         } else {
-          // no club leadership
-          flattened.push({
-            ...leader,
-            clubLeadership: {},
-          });
+          flattened.push({ ...leader, clubLeadership: {} });
         }
       });
 
       setRecords(flattened);
-
-      setPageCount(1); // Static since backend doesn't provide pagination
     } catch (err) {
       console.error(err);
       toast.error("Failed to fetch club leaders");
@@ -322,16 +519,14 @@ const ClubLeaderListing = () => {
       fetchClubLeaders(globalFilterValue);
     }, 400);
     return () => clearTimeout(delay);
-  }, [globalFilterValue, pageIndex, pageSize]);
+  }, [globalFilterValue]);
 
-  //  Delete Leader
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(
-        `${process.env.REACT_APP_BASE_URL}/user/admin-remove/${id}`,
-        { headers: { Authorization: `${token}` } }
-      );
+      await axios.delete(`${process.env.REACT_APP_BASE_URL}/user/admin-remove/${id}`, {
+        headers: { Authorization: `${token}` },
+      });
       toast.success("Club Leader deleted successfully");
       fetchClubLeaders();
     } catch (err) {
@@ -344,7 +539,6 @@ const ClubLeaderListing = () => {
     setSelectedLeaderId(id);
     setDeleteModalOpen(true);
   };
-
   //  UI
   return (
     <>
@@ -377,28 +571,19 @@ const ClubLeaderListing = () => {
                   <img src={Logo} alt="Loading..." className="w-52 h-24" />
                 </div>
               ) : (
-                <table
-                  className="min-w-full divide-y divide-slate-100 table-fixed"
-                  {...getTableProps()}
-                >
+                <table className="min-w-full divide-y divide-slate-100 table-fixed" {...getTableProps()}>
                   <thead className="bg-gradient-to-r from-[#18BB90] to-[#0C6B47]">
                     {headerGroups.map((headerGroup, index) => (
                       <tr {...headerGroup.getHeaderGroupProps()} key={index}>
                         {headerGroup.headers.map((column) => (
                           <th
-                            {...column.getHeaderProps(
-                              column.getSortByToggleProps()
-                            )}
+                            {...column.getHeaderProps(column.getSortByToggleProps())}
                             className="table-th text-white"
                             key={column.id}
                           >
                             {column.render("Header")}
                             <span>
-                              {column.isSorted
-                                ? column.isSortedDesc
-                                  ? " 🔽"
-                                  : " 🔼"
-                                : ""}
+                              {column.isSorted ? (column.isSortedDesc ? " 🔽" : " 🔼") : ""}
                             </span>
                           </th>
                         ))}
@@ -408,10 +593,7 @@ const ClubLeaderListing = () => {
                   <tbody {...getTableBodyProps()}>
                     {page.length === 0 ? (
                       <tr>
-                        <td
-                          colSpan={columns.length + 1}
-                          className="text-center py-4"
-                        >
+                        <td colSpan={columns.length + 1} className="text-center py-4">
                           No data available.
                         </td>
                       </tr>
@@ -421,10 +603,7 @@ const ClubLeaderListing = () => {
                         return (
                           <tr {...row.getRowProps()} className="even:bg-gray-50">
                             {row.cells.map((cell) => (
-                              <td
-                                {...cell.getCellProps()}
-                                className="px-6 py-4 whitespace-nowrap"
-                              >
+                              <td {...cell.getCellProps()} className="px-6 py-4 whitespace-nowrap">
                                 {cell.render("Cell")}
                               </td>
                             ))}
@@ -436,6 +615,22 @@ const ClubLeaderListing = () => {
                 </table>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Pagination */}
+        <div className="flex justify-between items-center mt-6">
+          <div>Page {pageIndex + 1} of {pageOptions.length}</div>
+          <div className="flex items-center space-x-2">
+            <button onClick={previousPage} disabled={!canPreviousPage} className="px-2 py-1 border rounded disabled:opacity-50">Prev</button>
+            <button onClick={nextPage} disabled={!canNextPage} className="px-2 py-1 border rounded disabled:opacity-50 bg-primary-600 text-white">Next</button>
+            <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} className="border p-1 rounded">
+              {[5, 10, 25, 50].map((size) => (
+                <option key={size} value={size}>
+                  Show {size}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </Card>
